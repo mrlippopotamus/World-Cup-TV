@@ -274,10 +274,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    line-height: 1;
     border: 1px solid rgba(255,255,255,0.1);
     overflow: hidden;
+    background: rgba(0,0,0,0.2);
+  }
+  .flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
   }
 
   .team-name {
@@ -424,9 +429,18 @@
   }
 
   .team-flag-sm {
-    font-size: 16px;
-    line-height: 1;
+    width: 22px;
+    height: 16px;
     flex-shrink: 0;
+    border-radius: 2px;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+  }
+  .team-flag-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .playing-indicator {
@@ -517,6 +531,54 @@
     letter-spacing: 1px;
   }
 
+  /* ── DEMO MODE ── */
+  .demo-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 999;
+    background: rgba(201,168,76,0.97);
+    color: #0A2A1A;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .demo-bar-left { display:flex; align-items:center; gap:10px; }
+  .demo-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.7; }
+  .demo-date { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; }
+  .demo-time-controls { display:flex; align-items:center; gap:6px; }
+  .demo-time-btn {
+    background: rgba(10,42,26,0.2);
+    border: 1px solid rgba(10,42,26,0.3);
+    border-radius: 6px;
+    color: #0A2A1A;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .demo-time-btn:hover { background: rgba(10,42,26,0.35); }
+  .demo-time-btn.active { background: rgba(10,42,26,0.5); color:#E8C96A; }
+  .demo-exit {
+    background: rgba(10,42,26,0.25);
+    border: 1px solid rgba(10,42,26,0.35);
+    border-radius: 6px;
+    color: #0A2A1A;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  .demo-exit:hover { background: rgba(10,42,26,0.4); }
+  body.demo-active { padding-top: 80px; }
+
   .ticker-bar {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -593,6 +655,29 @@
   </div>
 </header>
 
+<button id="demoToggleBtn" onclick="toggleDemo()" style="
+  position:fixed;bottom:56px;right:20px;z-index:998;
+  background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);
+  border-radius:8px;color:#C9A84C;font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">
+  ⚽ Demo Mode
+</button>
+
+<div id="demoBar" style="display:none;" class="demo-bar">
+  <div class="demo-bar-left">
+    <span class="demo-label">Demo</span>
+    <span class="demo-date">17 June 2026</span>
+    <div class="demo-time-controls">
+      <button class="demo-time-btn" onclick="setDemoTime('pre')"    id="dt-pre">Pre-Match</button>
+      <button class="demo-time-btn" onclick="setDemoTime('live1')"  id="dt-live1">1st Half</button>
+      <button class="demo-time-btn" onclick="setDemoTime('ht')"     id="dt-ht">Half Time</button>
+      <button class="demo-time-btn" onclick="setDemoTime('live2')"  id="dt-live2">2nd Half</button>
+      <button class="demo-time-btn" onclick="setDemoTime('ft')"     id="dt-ft">Full Time</button>
+    </div>
+  </div>
+  <button class="demo-exit" onclick="exitDemo()">✕ Exit Demo</button>
+</div>
+
 <div id="mainContent"></div>
 
 <div class="ticker-bar">
@@ -602,81 +687,81 @@
 
 <script>
 const ALL_FIXTURES = [
-  { date:"2026-06-11", utcH:19, utcM:0,  group:"A", home:"Mexico",              away:"South Africa",    homeFlag:"🇲🇽", awayFlag:"🇿🇦", venue:"Mexico City Stadium" },
-  { date:"2026-06-11", utcH:2,  utcM:0,  group:"A", home:"South Korea",         away:"Czechia",         homeFlag:"🇰🇷", awayFlag:"🇨🇿", venue:"Guadalajara Stadium", nextDay:true },
-  { date:"2026-06-12", utcH:19, utcM:0,  group:"B", home:"Canada",              away:"Bosnia & Herz.",  homeFlag:"🇨🇦", awayFlag:"🇧🇦", venue:"BMO Field, Toronto" },
-  { date:"2026-06-13", utcH:1,  utcM:0,  group:"D", home:"USA",                 away:"Paraguay",        homeFlag:"🇺🇸", awayFlag:"🇵🇾", venue:"SoFi Stadium, Los Angeles", nextDay:true },
-  { date:"2026-06-13", utcH:19, utcM:0,  group:"B", home:"Qatar",               away:"Switzerland",     homeFlag:"🇶🇦", awayFlag:"🇨🇭", venue:"San Francisco Bay Stadium" },
-  { date:"2026-06-13", utcH:22, utcM:0,  group:"C", home:"Brazil",              away:"Morocco",         homeFlag:"🇧🇷", awayFlag:"🇲🇦", venue:"MetLife Stadium, New York" },
-  { date:"2026-06-14", utcH:1,  utcM:0,  group:"C", home:"Haiti",               away:"Scotland",        homeFlag:"🇭🇹", awayFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", venue:"Gillette Stadium, Boston", nextDay:true },
-  { date:"2026-06-14", utcH:4,  utcM:0,  group:"D", home:"Australia",           away:"Türkiye",         homeFlag:"🇦🇺", awayFlag:"🇹🇷", venue:"BC Place, Vancouver", nextDay:true },
-  { date:"2026-06-14", utcH:17, utcM:0,  group:"E", home:"Germany",             away:"Curaçao",         homeFlag:"🇩🇪", awayFlag:"🇨🇼", venue:"Houston Stadium" },
-  { date:"2026-06-14", utcH:20, utcM:0,  group:"F", home:"Netherlands",         away:"Japan",           homeFlag:"🇳🇱", awayFlag:"🇯🇵", venue:"AT&T Stadium, Dallas" },
-  { date:"2026-06-14", utcH:23, utcM:0,  group:"E", home:"Ivory Coast",         away:"Ecuador",         homeFlag:"🇨🇮", awayFlag:"🇪🇨", venue:"Lincoln Financial, Philadelphia" },
-  { date:"2026-06-15", utcH:2,  utcM:0,  group:"F", home:"Tunisia",             away:"Sweden",          homeFlag:"🇹🇳", awayFlag:"🇸🇪", venue:"Estadio BBVA, Monterrey", nextDay:true },
-  { date:"2026-06-15", utcH:16, utcM:0,  group:"H", home:"Spain",               away:"Cape Verde",      homeFlag:"🇪🇸", awayFlag:"🇨🇻", venue:"Mercedes-Benz Stadium, Atlanta" },
-  { date:"2026-06-15", utcH:19, utcM:0,  group:"G", home:"Belgium",             away:"Egypt",           homeFlag:"🇧🇪", awayFlag:"🇪🇬", venue:"Lumen Field, Seattle" },
-  { date:"2026-06-15", utcH:22, utcM:0,  group:"H", home:"Saudi Arabia",        away:"Uruguay",         homeFlag:"🇸🇦", awayFlag:"🇺🇾", venue:"Hard Rock Stadium, Miami" },
-  { date:"2026-06-16", utcH:1,  utcM:0,  group:"G", home:"Iran",                away:"New Zealand",     homeFlag:"🇮🇷", awayFlag:"🇳🇿", venue:"SoFi Stadium, Los Angeles", nextDay:true },
-  { date:"2026-06-16", utcH:19, utcM:0,  group:"I", home:"France",              away:"Senegal",         homeFlag:"🇫🇷", awayFlag:"🇸🇳", venue:"MetLife Stadium, New York" },
-  { date:"2026-06-16", utcH:22, utcM:0,  group:"I", home:"Iraq",                away:"Norway",          homeFlag:"🇮🇶", awayFlag:"🇳🇴", venue:"Gillette Stadium, Boston" },
-  { date:"2026-06-17", utcH:1,  utcM:0,  group:"J", home:"Argentina",           away:"Algeria",         homeFlag:"🇦🇷", awayFlag:"🇩🇿", venue:"Arrowhead Stadium, Kansas City", nextDay:true },
-  { date:"2026-06-17", utcH:4,  utcM:0,  group:"J", home:"Austria",             away:"Jordan",          homeFlag:"🇦🇹", awayFlag:"🇯🇴", venue:"San Francisco Bay Stadium", nextDay:true },
-  { date:"2026-06-17", utcH:17, utcM:0,  group:"K", home:"Portugal",            away:"DR Congo",        homeFlag:"🇵🇹", awayFlag:"🇨🇩", venue:"Houston Stadium" },
-  { date:"2026-06-17", utcH:20, utcM:0,  group:"L", home:"England",             away:"Croatia",         homeFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag:"🇭🇷", venue:"AT&T Stadium, Dallas" },
-  { date:"2026-06-17", utcH:23, utcM:0,  group:"L", home:"Ghana",               away:"Panama",          homeFlag:"🇬🇭", awayFlag:"🇵🇦", venue:"BMO Field, Toronto" },
-  { date:"2026-06-18", utcH:2,  utcM:0,  group:"K", home:"Uzbekistan",          away:"Colombia",        homeFlag:"🇺🇿", awayFlag:"🇨🇴", venue:"Estadio Azteca, Mexico City", nextDay:true },
-  { date:"2026-06-18", utcH:16, utcM:0,  group:"A", home:"Czechia",             away:"South Africa",    homeFlag:"🇨🇿", awayFlag:"🇿🇦", venue:"Mercedes-Benz Stadium, Atlanta" },
-  { date:"2026-06-18", utcH:19, utcM:0,  group:"B", home:"Switzerland",         away:"Bosnia & Herz.",  homeFlag:"🇨🇭", awayFlag:"🇧🇦", venue:"SoFi Stadium, Los Angeles" },
-  { date:"2026-06-18", utcH:22, utcM:0,  group:"B", home:"Canada",              away:"Qatar",           homeFlag:"🇨🇦", awayFlag:"🇶🇦", venue:"BC Place, Vancouver" },
-  { date:"2026-06-19", utcH:1,  utcM:0,  group:"A", home:"Mexico",              away:"South Korea",     homeFlag:"🇲🇽", awayFlag:"🇰🇷", venue:"Estadio Akron, Guadalajara", nextDay:true },
-  { date:"2026-06-19", utcH:19, utcM:0,  group:"D", home:"USA",                 away:"Australia",       homeFlag:"🇺🇸", awayFlag:"🇦🇺", venue:"Lumen Field, Seattle" },
-  { date:"2026-06-19", utcH:19, utcM:0,  group:"C", home:"Scotland",            away:"Morocco",         homeFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag:"🇲🇦", venue:"Gillette Stadium, Boston" },
-  { date:"2026-06-20", utcH:1,  utcM:0,  group:"C", home:"Brazil",              away:"Haiti",           homeFlag:"🇧🇷", awayFlag:"🇭🇹", venue:"Lincoln Financial, Philadelphia", nextDay:true },
-  { date:"2026-06-20", utcH:4,  utcM:0,  group:"D", home:"Türkiye",             away:"Paraguay",        homeFlag:"🇹🇷", awayFlag:"🇵🇾", venue:"San Francisco Bay Stadium", nextDay:true },
-  { date:"2026-06-20", utcH:17, utcM:0,  group:"F", home:"Netherlands",         away:"Sweden",          homeFlag:"🇳🇱", awayFlag:"🇸🇪", venue:"Houston Stadium" },
-  { date:"2026-06-20", utcH:20, utcM:0,  group:"E", home:"Germany",             away:"Ivory Coast",     homeFlag:"🇩🇪", awayFlag:"🇨🇮", venue:"BMO Field, Toronto" },
-  { date:"2026-06-21", utcH:0,  utcM:0,  group:"E", home:"Ecuador",             away:"Curaçao",         homeFlag:"🇪🇨", awayFlag:"🇨🇼", venue:"Arrowhead Stadium, Kansas City", nextDay:true },
-  { date:"2026-06-21", utcH:4,  utcM:0,  group:"F", home:"Tunisia",             away:"Japan",           homeFlag:"🇹🇳", awayFlag:"🇯🇵", venue:"Estadio BBVA, Monterrey", nextDay:true },
-  { date:"2026-06-21", utcH:16, utcM:0,  group:"H", home:"Spain",               away:"Saudi Arabia",    homeFlag:"🇪🇸", awayFlag:"🇸🇦", venue:"Mercedes-Benz Stadium, Atlanta" },
-  { date:"2026-06-21", utcH:19, utcM:0,  group:"G", home:"Belgium",             away:"Iran",            homeFlag:"🇧🇪", awayFlag:"🇮🇷", venue:"SoFi Stadium, Los Angeles" },
-  { date:"2026-06-21", utcH:22, utcM:0,  group:"H", home:"Uruguay",             away:"Cape Verde",      homeFlag:"🇺🇾", awayFlag:"🇨🇻", venue:"Hard Rock Stadium, Miami" },
-  { date:"2026-06-22", utcH:1,  utcM:0,  group:"G", home:"New Zealand",         away:"Egypt",           homeFlag:"🇳🇿", awayFlag:"🇪🇬", venue:"BC Place, Vancouver", nextDay:true },
-  { date:"2026-06-22", utcH:17, utcM:0,  group:"J", home:"Argentina",           away:"Austria",         homeFlag:"🇦🇷", awayFlag:"🇦🇹", venue:"AT&T Stadium, Dallas" },
-  { date:"2026-06-22", utcH:21, utcM:0,  group:"I", home:"France",              away:"Iraq",            homeFlag:"🇫🇷", awayFlag:"🇮🇶", venue:"Lincoln Financial, Philadelphia" },
-  { date:"2026-06-23", utcH:0,  utcM:0,  group:"I", home:"Norway",              away:"Senegal",         homeFlag:"🇳🇴", awayFlag:"🇸🇳", venue:"MetLife Stadium, New York", nextDay:true },
-  { date:"2026-06-23", utcH:3,  utcM:0,  group:"J", home:"Jordan",              away:"Algeria",         homeFlag:"🇯🇴", awayFlag:"🇩🇿", venue:"San Francisco Bay Stadium", nextDay:true },
-  { date:"2026-06-23", utcH:17, utcM:0,  group:"K", home:"Portugal",            away:"Uzbekistan",      homeFlag:"🇵🇹", awayFlag:"🇺🇿", venue:"Houston Stadium" },
-  { date:"2026-06-23", utcH:20, utcM:0,  group:"L", home:"England",             away:"Ghana",           homeFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag:"🇬🇭", venue:"Arrowhead Stadium, Kansas City" },
-  { date:"2026-06-23", utcH:23, utcM:0,  group:"L", home:"Croatia",             away:"Panama",          homeFlag:"🇭🇷", awayFlag:"🇵🇦", venue:"BMO Field, Toronto" },
-  { date:"2026-06-24", utcH:2,  utcM:0,  group:"K", home:"DR Congo",            away:"Colombia",        homeFlag:"🇨🇩", awayFlag:"🇨🇴", venue:"Estadio Azteca, Mexico City", nextDay:true },
-  { date:"2026-06-24", utcH:19, utcM:0,  group:"A", home:"Czechia",             away:"Mexico",          homeFlag:"🇨🇿", awayFlag:"🇲🇽", venue:"Estadio Azteca, Mexico City" },
-  { date:"2026-06-24", utcH:19, utcM:0,  group:"A", home:"South Africa",        away:"South Korea",     homeFlag:"🇿🇦", awayFlag:"🇰🇷", venue:"Mercedes-Benz Stadium, Atlanta" },
-  { date:"2026-06-24", utcH:19, utcM:0,  group:"B", home:"Switzerland",         away:"Canada",          homeFlag:"🇨🇭", awayFlag:"🇨🇦", venue:"BC Place, Vancouver" },
-  { date:"2026-06-24", utcH:19, utcM:0,  group:"B", home:"Bosnia & Herz.",      away:"Qatar",           homeFlag:"🇧🇦", awayFlag:"🇶🇦", venue:"Lumen Field, Seattle" },
-  { date:"2026-06-25", utcH:23, utcM:0,  group:"C", home:"Scotland",            away:"Brazil",          homeFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag:"🇧🇷", venue:"Hard Rock Stadium, Miami" },
-  { date:"2026-06-25", utcH:23, utcM:0,  group:"C", home:"Morocco",             away:"Haiti",           homeFlag:"🇲🇦", awayFlag:"🇭🇹", venue:"Mercedes-Benz Stadium, Atlanta" },
-  { date:"2026-06-26", utcH:23, utcM:0,  group:"D", home:"USA",                 away:"Türkiye",         homeFlag:"🇺🇸", awayFlag:"🇹🇷", venue:"AT&T Stadium, Dallas" },
-  { date:"2026-06-26", utcH:23, utcM:0,  group:"D", home:"Paraguay",            away:"Australia",       homeFlag:"🇵🇾", awayFlag:"🇦🇺", venue:"SoFi Stadium, Los Angeles" },
-  { date:"2026-06-27", utcH:23, utcM:0,  group:"E", home:"Germany",             away:"Ecuador",         homeFlag:"🇩🇪", awayFlag:"🇪🇨", venue:"Houston Stadium" },
-  { date:"2026-06-27", utcH:23, utcM:0,  group:"E", home:"Ivory Coast",         away:"Curaçao",         homeFlag:"🇨🇮", awayFlag:"🇨🇼", venue:"Arrowhead Stadium, Kansas City" },
-  { date:"2026-06-27", utcH:23, utcM:0,  group:"F", home:"Netherlands",         away:"Tunisia",         homeFlag:"🇳🇱", awayFlag:"🇹🇳", venue:"Lincoln Financial, Philadelphia" },
-  { date:"2026-06-27", utcH:23, utcM:0,  group:"F", home:"Sweden",              away:"Japan",           homeFlag:"🇸🇪", awayFlag:"🇯🇵", venue:"Estadio BBVA, Monterrey" },
+  { date:"2026-06-11", utcH:19, utcM:0,  group:"A", home:"Mexico",              away:"South Africa", venue:"Mexico City Stadium" },
+  { date:"2026-06-11", utcH:2,  utcM:0,  group:"A", home:"South Korea",         away:"Czechia", venue:"Guadalajara Stadium", nextDay:true },
+  { date:"2026-06-12", utcH:19, utcM:0,  group:"B", home:"Canada",              away:"Bosnia & Herz.", venue:"BMO Field, Toronto" },
+  { date:"2026-06-13", utcH:1,  utcM:0,  group:"D", home:"USA",                 away:"Paraguay", venue:"SoFi Stadium, Los Angeles", nextDay:true },
+  { date:"2026-06-13", utcH:19, utcM:0,  group:"B", home:"Qatar",               away:"Switzerland", venue:"San Francisco Bay Stadium" },
+  { date:"2026-06-13", utcH:22, utcM:0,  group:"C", home:"Brazil",              away:"Morocco", venue:"MetLife Stadium, New York" },
+  { date:"2026-06-14", utcH:1,  utcM:0,  group:"C", home:"Haiti",               away:"Scotland", venue:"Gillette Stadium, Boston", nextDay:true },
+  { date:"2026-06-14", utcH:4,  utcM:0,  group:"D", home:"Australia",           away:"Türkiye", venue:"BC Place, Vancouver", nextDay:true },
+  { date:"2026-06-14", utcH:17, utcM:0,  group:"E", home:"Germany",             away:"Curaçao", venue:"Houston Stadium" },
+  { date:"2026-06-14", utcH:20, utcM:0,  group:"F", home:"Netherlands",         away:"Japan", venue:"AT&T Stadium, Dallas" },
+  { date:"2026-06-14", utcH:23, utcM:0,  group:"E", home:"Ivory Coast",         away:"Ecuador", venue:"Lincoln Financial, Philadelphia" },
+  { date:"2026-06-15", utcH:2,  utcM:0,  group:"F", home:"Tunisia",             away:"Sweden", venue:"Estadio BBVA, Monterrey", nextDay:true },
+  { date:"2026-06-15", utcH:16, utcM:0,  group:"H", home:"Spain",               away:"Cape Verde", venue:"Mercedes-Benz Stadium, Atlanta" },
+  { date:"2026-06-15", utcH:19, utcM:0,  group:"G", home:"Belgium",             away:"Egypt", venue:"Lumen Field, Seattle" },
+  { date:"2026-06-15", utcH:22, utcM:0,  group:"H", home:"Saudi Arabia",        away:"Uruguay", venue:"Hard Rock Stadium, Miami" },
+  { date:"2026-06-16", utcH:1,  utcM:0,  group:"G", home:"Iran",                away:"New Zealand", venue:"SoFi Stadium, Los Angeles", nextDay:true },
+  { date:"2026-06-16", utcH:19, utcM:0,  group:"I", home:"France",              away:"Senegal", venue:"MetLife Stadium, New York" },
+  { date:"2026-06-16", utcH:22, utcM:0,  group:"I", home:"Iraq",                away:"Norway", venue:"Gillette Stadium, Boston" },
+  { date:"2026-06-17", utcH:1,  utcM:0,  group:"J", home:"Argentina",           away:"Algeria", venue:"Arrowhead Stadium, Kansas City", nextDay:true },
+  { date:"2026-06-17", utcH:4,  utcM:0,  group:"J", home:"Austria",             away:"Jordan", venue:"San Francisco Bay Stadium", nextDay:true },
+  { date:"2026-06-17", utcH:17, utcM:0,  group:"K", home:"Portugal",            away:"DR Congo", venue:"Houston Stadium" },
+  { date:"2026-06-17", utcH:20, utcM:0,  group:"L", home:"England",             away:"Croatia", venue:"AT&T Stadium, Dallas" },
+  { date:"2026-06-17", utcH:23, utcM:0,  group:"L", home:"Ghana",               away:"Panama", venue:"BMO Field, Toronto" },
+  { date:"2026-06-18", utcH:2,  utcM:0,  group:"K", home:"Uzbekistan",          away:"Colombia", venue:"Estadio Azteca, Mexico City", nextDay:true },
+  { date:"2026-06-18", utcH:16, utcM:0,  group:"A", home:"Czechia",             away:"South Africa", venue:"Mercedes-Benz Stadium, Atlanta" },
+  { date:"2026-06-18", utcH:19, utcM:0,  group:"B", home:"Switzerland",         away:"Bosnia & Herz.", venue:"SoFi Stadium, Los Angeles" },
+  { date:"2026-06-18", utcH:22, utcM:0,  group:"B", home:"Canada",              away:"Qatar", venue:"BC Place, Vancouver" },
+  { date:"2026-06-19", utcH:1,  utcM:0,  group:"A", home:"Mexico",              away:"South Korea", venue:"Estadio Akron, Guadalajara", nextDay:true },
+  { date:"2026-06-19", utcH:19, utcM:0,  group:"D", home:"USA",                 away:"Australia", venue:"Lumen Field, Seattle" },
+  { date:"2026-06-19", utcH:19, utcM:0,  group:"C", home:"Scotland",            away:"Morocco", venue:"Gillette Stadium, Boston" },
+  { date:"2026-06-20", utcH:1,  utcM:0,  group:"C", home:"Brazil",              away:"Haiti", venue:"Lincoln Financial, Philadelphia", nextDay:true },
+  { date:"2026-06-20", utcH:4,  utcM:0,  group:"D", home:"Türkiye",             away:"Paraguay", venue:"San Francisco Bay Stadium", nextDay:true },
+  { date:"2026-06-20", utcH:17, utcM:0,  group:"F", home:"Netherlands",         away:"Sweden", venue:"Houston Stadium" },
+  { date:"2026-06-20", utcH:20, utcM:0,  group:"E", home:"Germany",             away:"Ivory Coast", venue:"BMO Field, Toronto" },
+  { date:"2026-06-21", utcH:0,  utcM:0,  group:"E", home:"Ecuador",             away:"Curaçao", venue:"Arrowhead Stadium, Kansas City", nextDay:true },
+  { date:"2026-06-21", utcH:4,  utcM:0,  group:"F", home:"Tunisia",             away:"Japan", venue:"Estadio BBVA, Monterrey", nextDay:true },
+  { date:"2026-06-21", utcH:16, utcM:0,  group:"H", home:"Spain",               away:"Saudi Arabia", venue:"Mercedes-Benz Stadium, Atlanta" },
+  { date:"2026-06-21", utcH:19, utcM:0,  group:"G", home:"Belgium",             away:"Iran", venue:"SoFi Stadium, Los Angeles" },
+  { date:"2026-06-21", utcH:22, utcM:0,  group:"H", home:"Uruguay",             away:"Cape Verde", venue:"Hard Rock Stadium, Miami" },
+  { date:"2026-06-22", utcH:1,  utcM:0,  group:"G", home:"New Zealand",         away:"Egypt", venue:"BC Place, Vancouver", nextDay:true },
+  { date:"2026-06-22", utcH:17, utcM:0,  group:"J", home:"Argentina",           away:"Austria", venue:"AT&T Stadium, Dallas" },
+  { date:"2026-06-22", utcH:21, utcM:0,  group:"I", home:"France",              away:"Iraq", venue:"Lincoln Financial, Philadelphia" },
+  { date:"2026-06-23", utcH:0,  utcM:0,  group:"I", home:"Norway",              away:"Senegal", venue:"MetLife Stadium, New York", nextDay:true },
+  { date:"2026-06-23", utcH:3,  utcM:0,  group:"J", home:"Jordan",              away:"Algeria", venue:"San Francisco Bay Stadium", nextDay:true },
+  { date:"2026-06-23", utcH:17, utcM:0,  group:"K", home:"Portugal",            away:"Uzbekistan", venue:"Houston Stadium" },
+  { date:"2026-06-23", utcH:20, utcM:0,  group:"L", home:"England",             away:"Ghana", venue:"Arrowhead Stadium, Kansas City" },
+  { date:"2026-06-23", utcH:23, utcM:0,  group:"L", home:"Croatia",             away:"Panama", venue:"BMO Field, Toronto" },
+  { date:"2026-06-24", utcH:2,  utcM:0,  group:"K", home:"DR Congo",            away:"Colombia", venue:"Estadio Azteca, Mexico City", nextDay:true },
+  { date:"2026-06-24", utcH:19, utcM:0,  group:"A", home:"Czechia",             away:"Mexico", venue:"Estadio Azteca, Mexico City" },
+  { date:"2026-06-24", utcH:19, utcM:0,  group:"A", home:"South Africa",        away:"South Korea", venue:"Mercedes-Benz Stadium, Atlanta" },
+  { date:"2026-06-24", utcH:19, utcM:0,  group:"B", home:"Switzerland",         away:"Canada", venue:"BC Place, Vancouver" },
+  { date:"2026-06-24", utcH:19, utcM:0,  group:"B", home:"Bosnia & Herz.",      away:"Qatar", venue:"Lumen Field, Seattle" },
+  { date:"2026-06-25", utcH:23, utcM:0,  group:"C", home:"Scotland",            away:"Brazil", venue:"Hard Rock Stadium, Miami" },
+  { date:"2026-06-25", utcH:23, utcM:0,  group:"C", home:"Morocco",             away:"Haiti", venue:"Mercedes-Benz Stadium, Atlanta" },
+  { date:"2026-06-26", utcH:23, utcM:0,  group:"D", home:"USA",                 away:"Türkiye", venue:"AT&T Stadium, Dallas" },
+  { date:"2026-06-26", utcH:23, utcM:0,  group:"D", home:"Paraguay",            away:"Australia", venue:"SoFi Stadium, Los Angeles" },
+  { date:"2026-06-27", utcH:23, utcM:0,  group:"E", home:"Germany",             away:"Ecuador", venue:"Houston Stadium" },
+  { date:"2026-06-27", utcH:23, utcM:0,  group:"E", home:"Ivory Coast",         away:"Curaçao", venue:"Arrowhead Stadium, Kansas City" },
+  { date:"2026-06-27", utcH:23, utcM:0,  group:"F", home:"Netherlands",         away:"Tunisia", venue:"Lincoln Financial, Philadelphia" },
+  { date:"2026-06-27", utcH:23, utcM:0,  group:"F", home:"Sweden",              away:"Japan", venue:"Estadio BBVA, Monterrey" },
 ];
 
 const GROUP_TEAMS = {
-  "A": [{flag:"🇲🇽",name:"Mexico"},{flag:"🇿🇦",name:"South Africa"},{flag:"🇰🇷",name:"South Korea"},{flag:"🇨🇿",name:"Czechia"}],
-  "B": [{flag:"🇨🇦",name:"Canada"},{flag:"🇶🇦",name:"Qatar"},{flag:"🇨🇭",name:"Switzerland"},{flag:"🇧🇦",name:"Bosnia & Herz."}],
-  "C": [{flag:"🇧🇷",name:"Brazil"},{flag:"🇲🇦",name:"Morocco"},{flag:"🇭🇹",name:"Haiti"},{flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",name:"Scotland"}],
-  "D": [{flag:"🇺🇸",name:"USA"},{flag:"🇵🇾",name:"Paraguay"},{flag:"🇦🇺",name:"Australia"},{flag:"🇹🇷",name:"Türkiye"}],
-  "E": [{flag:"🇩🇪",name:"Germany"},{flag:"🇨🇼",name:"Curaçao"},{flag:"🇨🇮",name:"Ivory Coast"},{flag:"🇪🇨",name:"Ecuador"}],
-  "F": [{flag:"🇳🇱",name:"Netherlands"},{flag:"🇯🇵",name:"Japan"},{flag:"🇹🇳",name:"Tunisia"},{flag:"🇸🇪",name:"Sweden"}],
-  "G": [{flag:"🇧🇪",name:"Belgium"},{flag:"🇪🇬",name:"Egypt"},{flag:"🇮🇷",name:"Iran"},{flag:"🇳🇿",name:"New Zealand"}],
-  "H": [{flag:"🇪🇸",name:"Spain"},{flag:"🇨🇻",name:"Cape Verde"},{flag:"🇸🇦",name:"Saudi Arabia"},{flag:"🇺🇾",name:"Uruguay"}],
-  "I": [{flag:"🇫🇷",name:"France"},{flag:"🇸🇳",name:"Senegal"},{flag:"🇮🇶",name:"Iraq"},{flag:"🇳🇴",name:"Norway"}],
-  "J": [{flag:"🇦🇷",name:"Argentina"},{flag:"🇩🇿",name:"Algeria"},{flag:"🇦🇹",name:"Austria"},{flag:"🇯🇴",name:"Jordan"}],
-  "K": [{flag:"🇵🇹",name:"Portugal"},{flag:"🇨🇩",name:"DR Congo"},{flag:"🇺🇿",name:"Uzbekistan"},{flag:"🇨🇴",name:"Colombia"}],
-  "L": [{flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",name:"England"},{flag:"🇭🇷",name:"Croatia"},{flag:"🇬🇭",name:"Ghana"},{flag:"🇵🇦",name:"Panama"}],
+  "A": [{code:"mx",name:"Mexico"},{code:"za",name:"South Africa"},{code:"kr",name:"South Korea"},{code:"cz",name:"Czechia"}],
+  "B": [{code:"ca",name:"Canada"},{code:"qa",name:"Qatar"},{code:"ch",name:"Switzerland"},{code:"ba",name:"Bosnia & Herz."}],
+  "C": [{code:"br",name:"Brazil"},{code:"ma",name:"Morocco"},{code:"ht",name:"Haiti"},{code:"gb-sct",name:"Scotland"}],
+  "D": [{code:"us",name:"USA"},{code:"py",name:"Paraguay"},{code:"au",name:"Australia"},{code:"tr",name:"Türkiye"}],
+  "E": [{code:"de",name:"Germany"},{code:"cw",name:"Curaçao"},{code:"ci",name:"Ivory Coast"},{code:"ec",name:"Ecuador"}],
+  "F": [{code:"nl",name:"Netherlands"},{code:"jp",name:"Japan"},{code:"tn",name:"Tunisia"},{code:"se",name:"Sweden"}],
+  "G": [{code:"be",name:"Belgium"},{code:"eg",name:"Egypt"},{code:"ir",name:"Iran"},{code:"nz",name:"New Zealand"}],
+  "H": [{code:"es",name:"Spain"},{code:"cv",name:"Cape Verde"},{code:"sa",name:"Saudi Arabia"},{code:"uy",name:"Uruguay"}],
+  "I": [{code:"fr",name:"France"},{code:"sn",name:"Senegal"},{code:"iq",name:"Iraq"},{code:"no",name:"Norway"}],
+  "J": [{code:"ar",name:"Argentina"},{code:"dz",name:"Algeria"},{code:"at",name:"Austria"},{code:"jo",name:"Jordan"}],
+  "K": [{code:"pt",name:"Portugal"},{code:"cd",name:"DR Congo"},{code:"uz",name:"Uzbekistan"},{code:"co",name:"Colombia"}],
+  "L": [{code:"gb-eng",name:"England"},{code:"hr",name:"Croatia"},{code:"gh",name:"Ghana"},{code:"pa",name:"Panama"}],
 };
 
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -699,11 +784,124 @@ function getDaysUntilWorldCup(){
   return Math.ceil(diff / (1000*60*60*24));
 }
 
+// ─── Demo Mode ────────────────────────────────────────────────
+// Simulates June 17 2026 at various match states with fake scores.
+// Portugal vs DR Congo is shown as the "live" match in all mid-game states.
+let DEMO_MODE = false;
+let DEMO_TIME = 'pre'; // pre | live1 | ht | live2 | ft
+
+// Demo: fake "now" timestamps relative to June 17 fixtures
+// Portugal vs DR Congo kicks off at 17:00 UTC
+const DEMO_KICKOFF = new Date('2026-06-17T17:00:00Z');
+
+const DEMO_TIMES = {
+  pre:   new Date('2026-06-17T16:30:00Z'), // 30min before KO
+  live1: new Date('2026-06-17T17:35:00Z'), // 35 min in
+  ht:    new Date('2026-06-17T17:50:00Z'), // half time
+  live2: new Date('2026-06-17T18:20:00Z'), // 65 min in
+  ft:    new Date('2026-06-17T19:05:00Z'), // full time
+};
+
+// Fake scores for demo fixtures keyed by "date_home"
+const DEMO_SCORES = {
+  pre: {},
+  live1: {
+    '2026-06-17_Portugal':    { home:1, away:0, minute:35, status:'live' },
+    '2026-06-17_England':     null,
+    '2026-06-17_Ghana':       null,
+    '2026-06-17_Uzbekistan':  null,
+  },
+  ht: {
+    '2026-06-17_Portugal':    { home:1, away:0, minute:45, status:'live' },
+    '2026-06-17_England':     null,
+    '2026-06-17_Ghana':       null,
+    '2026-06-17_Uzbekistan':  null,
+  },
+  live2: {
+    '2026-06-17_Portugal':    { home:2, away:1, minute:65, status:'live' },
+    '2026-06-17_England':     null,
+    '2026-06-17_Ghana':       null,
+    '2026-06-17_Uzbekistan':  null,
+  },
+  ft: {
+    '2026-06-17_Portugal':    { home:2, away:1, minute:null, status:'ft' },
+    '2026-06-17_England':     { home:3, away:0, minute:null, status:'ft' },
+    '2026-06-17_Ghana':       { home:1, away:1, minute:null, status:'ft' },
+    '2026-06-17_Uzbekistan':  null,
+  },
+};
+
+// Demo group standings (after 1 game each in Groups K and L — FT state)
+const DEMO_STANDINGS = {
+  K: [
+    { pos:1, name:'Portugal',   flag:'🇵🇹', p:1, w:1, d:0, l:0, gf:2, ga:1, pts:3 },
+    { pos:2, name:'Colombia',   flag:'🇨🇴', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
+    { pos:3, name:'Uzbekistan', flag:'🇺🇿', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
+    { pos:4, name:'DR Congo',   flag:'🇨🇩', p:1, w:0, d:0, l:1, gf:1, ga:2, pts:0 },
+  ],
+  L: [
+    { pos:1, name:'England',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:1, w:1, d:0, l:0, gf:3, ga:0, pts:3 },
+    { pos:2, name:'Ghana',      flag:'🇬🇭', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
+    { pos:3, name:'Panama',     flag:'🇵🇦', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
+    { pos:4, name:'Croatia',    flag:'🇭🇷', p:1, w:0, d:0, l:1, gf:0, ga:3, pts:0 },
+  ],
+};
+
+function getNow(){
+  if(DEMO_MODE) return new Date(DEMO_TIMES[DEMO_TIME]);
+  return new Date();
+}
+
+function getDemoScore(fixture){
+  if(!DEMO_MODE) return null;
+  const key = `${fixture.date}_${fixture.home}`;
+  const scores = DEMO_SCORES[DEMO_TIME] || {};
+  return scores[key] !== undefined ? scores[key] : null;
+}
+
+function toggleDemo(){
+  if(DEMO_MODE){ exitDemo(); return; }
+  DEMO_MODE = true;
+  DEMO_TIME = 'pre';
+  document.getElementById('demoBar').style.display = 'flex';
+  document.getElementById('demoToggleBtn').style.display = 'none';
+  document.body.classList.add('demo-active');
+  updateDemoButtons();
+  refreshAll();
+}
+
+function exitDemo(){
+  DEMO_MODE = false;
+  document.getElementById('demoBar').style.display = 'none';
+  document.getElementById('demoToggleBtn').style.display = 'block';
+  document.body.classList.remove('demo-active');
+  refreshAll();
+}
+
+function setDemoTime(t){
+  DEMO_TIME = t;
+  updateDemoButtons();
+  refreshAll();
+}
+
+function updateDemoButtons(){
+  ['pre','live1','ht','live2','ft'].forEach(t => {
+    const el = document.getElementById('dt-'+t);
+    if(el) el.classList.toggle('active', t === DEMO_TIME);
+  });
+}
+
+function refreshAll(){
+  // Clear standings cache so demo standings show fresh
+  Object.keys(standingsCache).forEach(k => delete standingsCache[k]);
+  render();
+}
+
 // ─── API config ───────────────────────────────────────────────
 // Get a free key at https://rapidapi.com/api-sports/api/api-football
 // Subscribe to the free tier (100 req/day), paste your key below.
 // Keep your GitHub repo PRIVATE so this key isn't publicly indexed.
-const RAPIDAPI_KEY  = 'a5ac274f43msh40feb9f19a026fcp1d786fjsnfb89c77bcfd0';
+const RAPIDAPI_KEY  = 'PASTE_YOUR_RAPIDAPI_KEY_HERE';
 const RAPIDAPI_HOST = 'api-football-v1.p.rapidapi.com';
 const API_BASE      = `https://${RAPIDAPI_HOST}/v3`;
 const WC_LEAGUE     = 1;
@@ -720,6 +918,79 @@ const GROUP_NAME_MAP = {
   'Group E':'E','Group F':'F','Group G':'G','Group H':'H',
   'Group I':'I','Group J':'J','Group K':'K','Group L':'L',
 };
+
+const FLAG_CODES = {
+  'Mexico': 'mx',
+  'South Africa': 'za',
+  'South Korea': 'kr',
+  'Czechia': 'cz',
+  'Canada': 'ca',
+  'Qatar': 'qa',
+  'Switzerland': 'ch',
+  'Bosnia & Herz.': 'ba',
+  'Brazil': 'br',
+  'Morocco': 'ma',
+  'Haiti': 'ht',
+  'Scotland': 'gb-sct',
+  'USA': 'us',
+  'Paraguay': 'py',
+  'Australia': 'au',
+  'Türkiye': 'tr',
+  'Germany': 'de',
+  'Curaçao': 'cw',
+  'Ivory Coast': 'ci',
+  'Ecuador': 'ec',
+  'Netherlands': 'nl',
+  'Japan': 'jp',
+  'Tunisia': 'tn',
+  'Sweden': 'se',
+  'Belgium': 'be',
+  'Egypt': 'eg',
+  'Iran': 'ir',
+  'New Zealand': 'nz',
+  'Spain': 'es',
+  'Cape Verde': 'cv',
+  'Saudi Arabia': 'sa',
+  'Uruguay': 'uy',
+  'France': 'fr',
+  'Senegal': 'sn',
+  'Iraq': 'iq',
+  'Norway': 'no',
+  'Argentina': 'ar',
+  'Algeria': 'dz',
+  'Austria': 'at',
+  'Jordan': 'jo',
+  'Portugal': 'pt',
+  'DR Congo': 'cd',
+  'Uzbekistan': 'uz',
+  'Colombia': 'co',
+  'England': 'gb-eng',
+  'Croatia': 'hr',
+  'Ghana': 'gh',
+  'Panama': 'pa',
+};
+
+function flagImg(code, size='lg', cls=''){
+  // flagcdn.com serves SVG/PNG flags by ISO 3166-1 alpha-2 code
+  // size: 'sm' = 20px, 'md' = 32px, 'lg' = 48px, 'xl' = 64px
+  const heights = {sm:16, md:24, lg:36, xl:48};
+  const h = heights[size] || 36;
+  const w = Math.round(h * 1.5);
+  const c = code.toLowerCase();
+  return `<img src="https://flagcdn.com/w${w*2}/${c}.png"
+               srcset="https://flagcdn.com/w${w*2}/${c}.png 2x"
+               width="${w}" height="${h}"
+               alt="" loading="lazy"
+               style="border-radius:4px;object-fit:cover;display:block;"
+               class="${cls}">`;
+}
+
+function flagFor(teamName){
+  const norm = normName(teamName);
+  const code = FLAG_CODES[norm];
+  if(!code) return '';
+  return flagImg(code, 'sm');
+}
 
 // API-Football team name → name used in our fixture list (for flag lookup)
 const TEAM_NAME_MAP = {
@@ -760,6 +1031,10 @@ async function apiFetch(path){
 }
 
 async function fetchStandings(groupLetter){
+  // In demo FT mode, return realistic fake standings
+  if(DEMO_MODE && DEMO_TIME === 'ft' && DEMO_STANDINGS[groupLetter]){
+    return DEMO_STANDINGS[groupLetter];
+  }
   const cached = standingsCache[groupLetter];
   const now = Date.now();
   // Cache for 2 minutes when live, 10 minutes otherwise
@@ -780,7 +1055,7 @@ async function fetchStandings(groupLetter){
       const rows = groupArr.map((entry, i) => ({
         pos:  i + 1,
         name: normName(entry.team?.name || ''),
-        flag: flagFor(entry.team?.name || ''),
+        code: FLAG_CODES[normName(entry.team?.name || '')] || 'un',
         p:    entry.all?.played  ?? 0,
         w:    entry.all?.win     ?? 0,
         d:    entry.all?.draw    ?? 0,
@@ -804,7 +1079,7 @@ async function fetchStandings(groupLetter){
 function fallbackStandings(groupLetter){
   const teams = GROUP_TEAMS[groupLetter] || [];
   return teams.map((t, i) => ({
-    pos: i+1, name: t.name, flag: t.flag,
+    pos: i+1, name: t.name, code: t.code,
     p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0
   }));
 }
@@ -874,6 +1149,9 @@ async function buildApiIdMap(){
 }
 
 function getApiScore(fixture){
+  if(DEMO_MODE){
+    return getDemoScore(fixture);
+  }
   const key = `${fixture.date}_${fixture.home}`;
   const id  = apiIdMap[key];
   if(!id) return null;
@@ -884,6 +1162,10 @@ function getApiScore(fixture){
 function setProxyStatus(state){
   const el = document.getElementById('proxyStatus');
   if(!el) return;
+  if(DEMO_MODE){
+    el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C9A84C;margin-right:6px;vertical-align:middle;"></span>Demo mode active';
+    return;
+  }
   const states = {
     ok:   { dot:'#2C9652', text:'Live data connected' },
     warn: { dot:'#C9A84C', text:'Using cached data' },
@@ -910,7 +1192,7 @@ async function checkProxy(){
 
 // ─── Rendering ─────────────────────────────────────────────────
 function render(){
-  const now = new Date();
+  const now = getNow();
   const in24h = new Date(now.getTime() + 24*60*60*1000);
 
   const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1001,14 +1283,14 @@ function render(){
         </div>
         <div class="teams-row">
           <div class="team">
-            <div class="flag">${f.homeFlag}</div>
+            <div class="flag">${flagImg(FLAG_CODES[f.home] || FLAG_CODES[normName(f.home)] || "un", "lg")}</div>
             <div class="team-name">${f.home}</div>
           </div>
           <div class="vs-divider">
             ${hasScore ? scoreHtml : `<span class="vs-text">VS</span>`}
           </div>
           <div class="team">
-            <div class="flag">${f.awayFlag}</div>
+            <div class="flag">${flagImg(FLAG_CODES[f.away] || FLAG_CODES[normName(f.away)] || "un", "lg")}</div>
             <div class="team-name">${f.away}</div>
           </div>
         </div>
@@ -1075,7 +1357,7 @@ async function renderGroupCard(g, allShow){
           <span class="pos-num">${i+1}</span>
         </td>
         <td class="col-team">
-          <span class="team-flag-sm">${t.flag}</span>
+          <span class="team-flag-sm">${flagImg(t.code || FLAG_CODES[t.name] || "un", "sm")}</span>
           <span>${t.name}</span>
           ${isPlaying ? '<span class="playing-indicator"></span>' : ''}
         </td>
@@ -1125,7 +1407,7 @@ async function boot(){
     if(proxyOk){
       await fetchLiveScores();
       // Bust standings cache for active groups so they re-fetch
-      const now = new Date();
+      const now = getNow();
       ALL_FIXTURES.forEach(f => {
         const ko = getKickoffUTC(f);
         const elapsed = now - ko;
