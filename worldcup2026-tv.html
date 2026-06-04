@@ -939,7 +939,7 @@ function refreshAll(){
 // Sign up at https://rapidapi.com/tipsters/api/flashlive-sports
 // Subscribe to the free tier, then paste your RapidAPI key below.
 // Keep your GitHub repo PRIVATE so this key isn't publicly indexed.
-const RAPIDAPI_KEY  = 'PASTE_YOUR_RAPIDAPI_KEY_HERE';
+const RAPIDAPI_KEY  = 'a5ac274f43msh40feb9f19a026fcp1d786fjsnfb89c77bcfd0';
 const RAPIDAPI_HOST = 'flashlive-sports.p.rapidapi.com';
 const API_BASE      = 'https://flashlive-sports.p.rapidapi.com';
 const SPORT_ID      = 1;   // Soccer
@@ -956,7 +956,7 @@ const scoreCache     = {};  // "date_home"  -> { home, away, minute, status }
 
 // ─── Fetch helper ─────────────────────────────────────────────
 async function apiFetch(path){
-  if(RAPIDAPI_KEY === 'a5ac274f43msh40feb9f19a026fcp1d786fjsnfb89c77bcfd0') throw new Error('No API key');
+  if(RAPIDAPI_KEY === 'PASTE_YOUR_RAPIDAPI_KEY_HERE') throw new Error('No API key');
   const res = await fetch(API_BASE + path, {
     headers: {
       'x-rapidapi-key':  RAPIDAPI_KEY,
