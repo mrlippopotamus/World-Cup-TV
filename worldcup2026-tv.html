@@ -51,7 +51,7 @@
       ),
       var(--green-dark);
     min-height: 100vh;
-    padding: 40px 60px 60px;
+    padding: 40px 60px 100px;
   }
 
   /* ── HEADER ── */
@@ -463,6 +463,7 @@
   /* ── FOOTER ── */
   footer {
     margin-top: 60px;
+    margin-bottom: 0;
     text-align: center;
     font-size: 12px;
     color: var(--text-muted);
@@ -951,6 +952,27 @@ const LOCALE        = 'en_GB';
 let WC_STAGE_ID  = null; // e.g. "xAqKqnY5" — resolved at runtime
 let WC_SEASON_ID = null; // e.g. "season id"  — resolved at runtime
 
+// ─── Request counter ──────────────────────────────────────────
+// Persisted in sessionStorage so it survives page refreshes within the day
+function getTodayKey(){ return 'wc_req_' + new Date().toISOString().slice(0,10); }
+function getReqCount(){
+  try { return parseInt(sessionStorage.getItem(getTodayKey()) || '0'); } catch(e){ return 0; }
+}
+function incReqCount(){
+  try {
+    const k = getTodayKey();
+    const n = getReqCount() + 1;
+    sessionStorage.setItem(k, n);
+    // Clear yesterday's keys
+    Object.keys(sessionStorage).forEach(key => {
+      if(key.startsWith('wc_req_') && key !== k) sessionStorage.removeItem(key);
+    });
+    updateReqDisplay();
+    return n;
+  } catch(e){ return 0; }
+}
+const FREE_TIER_LIMIT = 100;
+
 // ─── Cache ────────────────────────────────────────────────────
 const standingsCache = {};  // groupLetter -> { rows, fetchedAt }
 const scoreCache     = {};  // "date_home"  -> { home, away, minute, status }
@@ -964,7 +986,9 @@ async function apiFetch(path){
       'x-rapidapi-host': RAPIDAPI_HOST,
     }
   });
+  if(res.status === 429) throw new Error('RATE_LIMIT');
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  incReqCount();
   return res.json();
 }
 
@@ -1147,13 +1171,19 @@ function setProxyStatus(state){
     el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C9A84C;margin-right:6px;vertical-align:middle;"></span>Demo mode active';
     return;
   }
+  const count = getReqCount();
+  const pct   = Math.min(Math.round((count / FREE_TIER_LIMIT) * 100), 100);
+  const barCol = pct >= 100 ? '#8B3030' : pct >= 80 ? '#C9A84C' : '#2C9652';
   const states = {
-    ok:   { dot:'#2C9652', text:'Live data connected' },
-    warn: { dot:'#C9A84C', text:'Using cached data' },
-    off:  { dot:'#8B3030', text:'API key needed — see README' },
+    ok:    { dot:'#2C9652', text:`API requests today: ${count} / ${FREE_TIER_LIMIT}` },
+    warn:  { dot:'#C9A84C', text:`API requests today: ${count} / ${FREE_TIER_LIMIT} — using cache` },
+    limit: { dot:'#8B3030', text:`Daily limit reached (${FREE_TIER_LIMIT} / ${FREE_TIER_LIMIT}) — resets at midnight` },
+    off:   { dot:'#8B3030', text:'API key needed — see README' },
   };
   const s = states[state] || states.off;
-  el.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.dot};margin-right:6px;vertical-align:middle;"></span>${s.text}`;
+  el.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.dot};margin-right:6px;vertical-align:middle;"></span>${s.text}`
+    + `<span style="display:inline-block;width:80px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-left:10px;vertical-align:middle;overflow:hidden;">`
+    + `<span style="display:block;width:${pct}%;height:100%;background:${barCol};border-radius:2px;transition:width 0.4s;"></span></span>`;
 }
 
 async function checkProxy(){
@@ -1161,12 +1191,17 @@ async function checkProxy(){
     setProxyStatus('off');
     return false;
   }
+  // If we're already at the limit, don't waste a request checking
+  if(getReqCount() >= FREE_TIER_LIMIT){
+    setProxyStatus('limit');
+    return false;
+  }
   try {
-    // Lightweight check — just hit sports list
     await apiFetch(`/v1/sports/list`);
     setProxyStatus('ok');
     return true;
   } catch(e){
+    if(e.message === 'RATE_LIMIT'){ setProxyStatus('limit'); return false; }
     setProxyStatus('off');
     return false;
   }
@@ -1352,6 +1387,17 @@ function buildTicker(fixtures){
 
   const doubled = [...items, ...items].join('');
   document.getElementById('tickerContent').innerHTML = doubled;
+}
+
+function updateReqDisplay(){
+  // Re-render the status bar with latest count without changing state
+  const el = document.getElementById('proxyStatus');
+  if(!el || DEMO_MODE) return;
+  const count = getReqCount();
+  if(count >= FREE_TIER_LIMIT){
+    setProxyStatus('limit');
+  }
+  // Otherwise the next setProxyStatus('ok'/'warn') call will update it naturally
 }
 
 // ─── Boot & refresh loop ───────────────────────────────────────
