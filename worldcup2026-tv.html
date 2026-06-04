@@ -51,7 +51,7 @@
       ),
       var(--green-dark);
     min-height: 100vh;
-    padding: 40px 60px 60px;
+    padding: 40px 60px 100px;
   }
 
   /* ── HEADER ── */
@@ -463,6 +463,7 @@
   /* ── FOOTER ── */
   footer {
     margin-top: 60px;
+    margin-bottom: 0;
     text-align: center;
     font-size: 12px;
     color: var(--text-muted);
@@ -602,8 +603,9 @@
     height: 100%;
     display: flex;
     align-items: center;
-    background: rgba(201,168,76,0.08);
+    background: #0D3B22;
     flex-shrink: 0;
+    z-index: 9;
   }
 
   .ticker-scroll {
@@ -749,6 +751,44 @@ const ALL_FIXTURES = [
   { date:"2026-06-27", utcH:23, utcM:0,  group:"F", home:"Sweden",              away:"Japan", venue:"Estadio BBVA, Monterrey" },
 ];
 
+const FLAG_CODES = {
+  "Mexico": "mx", "South Africa": "za", "South Korea": "kr", "Czechia": "cz",
+  "Canada": "ca", "Qatar": "qa", "Switzerland": "ch", "Bosnia & Herz.": "ba",
+  "Brazil": "br", "Morocco": "ma", "Haiti": "ht", "Scotland": "gb-sct",
+  "USA": "us", "Paraguay": "py", "Australia": "au", "Türkiye": "tr",
+  "Germany": "de", "Curaçao": "cw", "Ivory Coast": "ci", "Ecuador": "ec",
+  "Netherlands": "nl", "Japan": "jp", "Tunisia": "tn", "Sweden": "se",
+  "Belgium": "be", "Egypt": "eg", "Iran": "ir", "New Zealand": "nz",
+  "Spain": "es", "Cape Verde": "cv", "Saudi Arabia": "sa", "Uruguay": "uy",
+  "France": "fr", "Senegal": "sn", "Iraq": "iq", "Norway": "no",
+  "Argentina": "ar", "Algeria": "dz", "Austria": "at", "Jordan": "jo",
+  "Portugal": "pt", "DR Congo": "cd", "Uzbekistan": "uz", "Colombia": "co",
+  "England": "gb-eng", "Croatia": "hr", "Ghana": "gh", "Panama": "pa",
+};
+
+function flagImg(code, size, cls){
+  size = size || 'lg'; cls = cls || '';
+  const c = (code || 'un').toLowerCase();
+  const dims = {sm:'20x15', md:'32x24', lg:'56x42', xl:'80x60'};
+  const d = dims[size] || dims.lg;
+  const parts = d.split('x');
+  const dw = parseInt(parts[0])*2, dh = parseInt(parts[1])*2;
+  return '<img src="https://flagcdn.com/'+d+'/'+c+'.png"'
+       + ' srcset="https://flagcdn.com/'+dw+'x'+dh+'/'+c+'.png 2x"'
+       + ' width="'+parts[0]+'" height="'+parts[1]+'"'
+       + ' alt="" loading="lazy"'
+       + ' style="border-radius:4px;object-fit:cover;display:block;"'
+       + ' class="'+cls+'">';
+}
+
+const TEAM_NAME_MAP = {
+  'Korea Republic':'South Korea', 'Czech Republic':'Czechia',
+  'Bosnia':'Bosnia & Herz.', 'Bosnia and Herzegovina':'Bosnia & Herz.',
+  "Côte d'Ivoire":"Ivory Coast", 'Congo DR':'DR Congo',
+  'Turkey':'Türkiye', 'Curacao':'Curaçao',
+};
+function normName(n){ return TEAM_NAME_MAP[n] || n; }
+
 const GROUP_TEAMS = {
   "A": [{code:"mx",name:"Mexico"},{code:"za",name:"South Africa"},{code:"kr",name:"South Korea"},{code:"cz",name:"Czechia"}],
   "B": [{code:"ca",name:"Canada"},{code:"qa",name:"Qatar"},{code:"ch",name:"Switzerland"},{code:"ba",name:"Bosnia & Herz."}],
@@ -834,16 +874,16 @@ const DEMO_SCORES = {
 // Demo group standings (after 1 game each in Groups K and L — FT state)
 const DEMO_STANDINGS = {
   K: [
-    { pos:1, name:'Portugal',   flag:'🇵🇹', p:1, w:1, d:0, l:0, gf:2, ga:1, pts:3 },
-    { pos:2, name:'Colombia',   flag:'🇨🇴', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:3, name:'Uzbekistan', flag:'🇺🇿', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:4, name:'DR Congo',   flag:'🇨🇩', p:1, w:0, d:0, l:1, gf:1, ga:2, pts:0 },
+    { pos:1, name:'Portugal',   code:'pt', p:1, w:1, d:0, l:0, gf:2, ga:1, pts:3 },
+    { pos:2, name:'Colombia',   code:'co', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
+    { pos:3, name:'Uzbekistan', code:'uz', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
+    { pos:4, name:'DR Congo',   code:'cd', p:1, w:0, d:0, l:1, gf:1, ga:2, pts:0 },
   ],
   L: [
-    { pos:1, name:'England',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', p:1, w:1, d:0, l:0, gf:3, ga:0, pts:3 },
-    { pos:2, name:'Ghana',      flag:'🇬🇭', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:3, name:'Panama',     flag:'🇵🇦', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:4, name:'Croatia',    flag:'🇭🇷', p:1, w:0, d:0, l:1, gf:0, ga:3, pts:0 },
+    { pos:1, name:'England',    code:'gb-eng', p:1, w:1, d:0, l:0, gf:3, ga:0, pts:3 },
+    { pos:2, name:'Ghana',      code:'gh', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
+    { pos:3, name:'Panama',     code:'pa', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
+    { pos:4, name:'Croatia',    code:'hr', p:1, w:0, d:0, l:1, gf:0, ga:3, pts:0 },
   ],
 };
 
@@ -898,179 +938,211 @@ function refreshAll(){
 }
 
 // ─── API config ───────────────────────────────────────────────
-// Get a free key at https://rapidapi.com/api-sports/api/api-football
-// Subscribe to the free tier (100 req/day), paste your key below.
+// Sign up at https://rapidapi.com/tipsters/api/flashlive-sports
+// Subscribe to the free tier, then paste your RapidAPI key below.
 // Keep your GitHub repo PRIVATE so this key isn't publicly indexed.
-const RAPIDAPI_KEY  = 'a5ac274f43msh40feb9f19a026fcp1d786fjsnfb89c77bcfd0';
-const RAPIDAPI_HOST = 'sportapi7.p.rapidapi.com';
-const API_BASE      = `https://${RAPIDAPI_HOST}/v3`;
-const WC_LEAGUE     = 1;
-const WC_SEASON     = 2026;
+const RAPIDAPI_KEY  = 'aba7e0412bmsh77f82fad3bbf001p1f189fjsn4e02a526992d';
+const RAPIDAPI_HOST = 'flashlive-sports.p.rapidapi.com';
+const API_BASE      = 'https://flashlive-sports.p.rapidapi.com';
+const SPORT_ID      = 1;   // Soccer
+const LOCALE        = 'en_GB';
 
-// Cache: { groupLetter -> { rows, fetchedAt } }
-const standingsCache = {};
-// Cache: { fixtureId -> { home, away, minute, status, fetchedAt } }
-const scoreCache = {};
+// FlashLive World Cup 2026 stage ID — looked up once on boot
+// The tournament shows as "World" > "FIFA World Cup" in the tournaments list
+let WC_STAGE_ID  = null; // e.g. "xAqKqnY5" — resolved at runtime
+let WC_SEASON_ID = null; // e.g. "season id"  — resolved at runtime
 
-// API-Football group name → our group letter
-const GROUP_NAME_MAP = {
-  'Group A':'A','Group B':'B','Group C':'C','Group D':'D',
-  'Group E':'E','Group F':'F','Group G':'G','Group H':'H',
-  'Group I':'I','Group J':'J','Group K':'K','Group L':'L',
-};
-
-const FLAG_CODES = {
-  'Mexico': 'mx',
-  'South Africa': 'za',
-  'South Korea': 'kr',
-  'Czechia': 'cz',
-  'Canada': 'ca',
-  'Qatar': 'qa',
-  'Switzerland': 'ch',
-  'Bosnia & Herz.': 'ba',
-  'Brazil': 'br',
-  'Morocco': 'ma',
-  'Haiti': 'ht',
-  'Scotland': 'gb-sct',
-  'USA': 'us',
-  'Paraguay': 'py',
-  'Australia': 'au',
-  'Türkiye': 'tr',
-  'Germany': 'de',
-  'Curaçao': 'cw',
-  'Ivory Coast': 'ci',
-  'Ecuador': 'ec',
-  'Netherlands': 'nl',
-  'Japan': 'jp',
-  'Tunisia': 'tn',
-  'Sweden': 'se',
-  'Belgium': 'be',
-  'Egypt': 'eg',
-  'Iran': 'ir',
-  'New Zealand': 'nz',
-  'Spain': 'es',
-  'Cape Verde': 'cv',
-  'Saudi Arabia': 'sa',
-  'Uruguay': 'uy',
-  'France': 'fr',
-  'Senegal': 'sn',
-  'Iraq': 'iq',
-  'Norway': 'no',
-  'Argentina': 'ar',
-  'Algeria': 'dz',
-  'Austria': 'at',
-  'Jordan': 'jo',
-  'Portugal': 'pt',
-  'DR Congo': 'cd',
-  'Uzbekistan': 'uz',
-  'Colombia': 'co',
-  'England': 'gb-eng',
-  'Croatia': 'hr',
-  'Ghana': 'gh',
-  'Panama': 'pa',
-};
-
-function flagImg(code, size='lg', cls=''){
-  // flagcdn.com serves SVG/PNG flags by ISO 3166-1 alpha-2 code
-  // size: 'sm' = 20px, 'md' = 32px, 'lg' = 48px, 'xl' = 64px
-  const heights = {sm:16, md:24, lg:36, xl:48};
-  const h = heights[size] || 36;
-  const w = Math.round(h * 1.5);
-  const c = code.toLowerCase();
-  return `<img src="https://flagcdn.com/w${w*2}/${c}.png"
-               srcset="https://flagcdn.com/w${w*2}/${c}.png 2x"
-               width="${w}" height="${h}"
-               alt="" loading="lazy"
-               style="border-radius:4px;object-fit:cover;display:block;"
-               class="${cls}">`;
+// ─── Request counter ──────────────────────────────────────────
+// Persisted in sessionStorage so it survives page refreshes within the day
+function getTodayKey(){ return 'wc_req_' + new Date().toISOString().slice(0,10); }
+function getReqCount(){
+  try { return parseInt(sessionStorage.getItem(getTodayKey()) || '0'); } catch(e){ return 0; }
 }
-
-function flagFor(teamName){
-  const norm = normName(teamName);
-  const code = FLAG_CODES[norm];
-  if(!code) return '';
-  return flagImg(code, 'sm');
+function incReqCount(){
+  try {
+    const k = getTodayKey();
+    const n = getReqCount() + 1;
+    sessionStorage.setItem(k, n);
+    // Clear yesterday's keys
+    Object.keys(sessionStorage).forEach(key => {
+      if(key.startsWith('wc_req_') && key !== k) sessionStorage.removeItem(key);
+    });
+    updateReqDisplay();
+    return n;
+  } catch(e){ return 0; }
 }
+const FREE_TIER_LIMIT = 100;
 
-// API-Football team name → name used in our fixture list (for flag lookup)
-const TEAM_NAME_MAP = {
-  'Korea Republic':'South Korea',
-  'Czech Republic':'Czechia', 'Czechia':'Czechia',
-  'Bosnia':'Bosnia & Herz.','Bosnia and Herzegovina':'Bosnia & Herz.',
-  'Ivory Coast':"Ivory Coast", "Côte d'Ivoire":"Ivory Coast",
-  'DR Congo':'DR Congo','Congo DR':'DR Congo',
-  'Turkey':'Türkiye','Türkiye':'Türkiye',
-  'Curacao':'Curaçao','Curaçao':'Curaçao',
-  'Cape Verde':'Cape Verde',
-  'Saudi Arabia':'Saudi Arabia',
-  'New Zealand':'New Zealand',
-};
-function normName(n){ return TEAM_NAME_MAP[n] || n; }
+// ─── Cache ────────────────────────────────────────────────────
+const standingsCache = {};  // groupLetter -> { rows, fetchedAt }
+const scoreCache     = {};  // "date_home"  -> { home, away, minute, status }
 
-function flagFor(teamName){
-  const norm = normName(teamName);
-  for(const g of Object.values(GROUP_TEAMS)){
-    for(const t of g){ if(t.name === norm) return t.flag; }
-  }
-  return '🏳️';
-}
-
-// ─── Fetch helpers ─────────────────────────────────────────────
+// ─── Fetch helper ─────────────────────────────────────────────
 async function apiFetch(path){
-  if(RAPIDAPI_KEY === 'PASTE_YOUR_RAPIDAPI_KEY_HERE'){
-    throw new Error('API key not set');
-  }
+  if(RAPIDAPI_KEY === 'PASTE_YOUR_RAPIDAPI_KEY_HERE') throw new Error('No API key');
   const res = await fetch(API_BASE + path, {
     headers: {
       'x-rapidapi-key':  RAPIDAPI_KEY,
       'x-rapidapi-host': RAPIDAPI_HOST,
     }
   });
+  if(res.status === 429) throw new Error('RATE_LIMIT');
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  incReqCount();
   return res.json();
 }
 
+// ─── Find World Cup stage/season IDs ──────────────────────────
+async function resolveWCIds(){
+  if(WC_STAGE_ID) return true;
+  try {
+    const data = await apiFetch(`/v1/tournaments/list?locale=${LOCALE}&sport_id=${SPORT_ID}`);
+    const tournaments = data?.DATA || [];
+    for(const t of tournaments){
+      const name = (t.LEAGUE_NAME || '').toLowerCase();
+      const country = (t.COUNTRY_NAME || '').toLowerCase();
+      if((name.includes('world cup') || name.includes('fifa world cup')) && country === 'world'){
+        WC_STAGE_ID  = t.STAGES?.[0]?.STAGE_ID || null;
+        WC_SEASON_ID = t.ACTUAL_TOURNAMENT_SEASON_ID || null;
+        console.log('WC IDs resolved:', WC_STAGE_ID, WC_SEASON_ID);
+        return true;
+      }
+    }
+    console.warn('World Cup not found in tournament list');
+    return false;
+  } catch(e){
+    console.warn('resolveWCIds failed:', e.message);
+    return false;
+  }
+}
+
+// ─── Fetch live scores ─────────────────────────────────────────
+async function fetchLiveScores(){
+  try {
+    const data = await apiFetch(`/v1/events/live-list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0`);
+    const groups = data?.DATA || [];
+    const now = Date.now();
+    groups.forEach(group => {
+      const groupName = group.NAME || '';
+      if(!groupName.toLowerCase().includes('world cup')) return;
+      (group.EVENTS || []).forEach(ev => {
+        const key = buildScoreKey(ev.HOME_NAME, ev.START_TIME);
+        if(!key) return;
+        const stage = ev.STAGE || '';
+        const isLive = ev.STAGE_TYPE === 'LIVE';
+        const isFt   = ev.STAGE_TYPE === 'FINISHED';
+        if(isLive || isFt){
+          scoreCache[key] = {
+            home:    parseInt(ev.HOME_SCORE_CURRENT) ?? null,
+            away:    parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
+            minute:  isLive ? calcMinute(ev) : null,
+            status:  isLive ? 'live' : 'ft',
+            fetchedAt: now,
+          };
+        }
+      });
+    });
+  } catch(e){
+    console.warn('fetchLiveScores failed:', e.message);
+    setProxyStatus('warn');
+  }
+}
+
+// ─── Fetch today's finished results ───────────────────────────
+async function fetchTodayResults(){
+  try {
+    const data = await apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=0`);
+    const groups = data?.DATA || [];
+    const now = Date.now();
+    groups.forEach(group => {
+      if(!(group.NAME||'').toLowerCase().includes('world cup')) return;
+      (group.EVENTS || []).forEach(ev => {
+        if(ev.STAGE_TYPE !== 'FINISHED') return;
+        const key = buildScoreKey(ev.HOME_NAME, ev.START_TIME);
+        if(!key || scoreCache[key]) return;
+        scoreCache[key] = {
+          home:   parseInt(ev.HOME_SCORE_CURRENT) ?? null,
+          away:   parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
+          minute: null,
+          status: 'ft',
+          fetchedAt: now,
+        };
+      });
+    });
+  } catch(e){ /* silent */ }
+}
+
+// Build a cache key from the API team name + unix timestamp
+// We match to our fixture list by normalising the team name
+function buildScoreKey(apiHomeName, unixTime){
+  const norm = normName(apiHomeName);
+  // Find the fixture date from the unix timestamp
+  const d = new Date(unixTime * 1000);
+  const date = d.toISOString().slice(0,10);
+  return `${date}_${norm}`;
+}
+
+function calcMinute(ev){
+  // FlashLive doesn't return elapsed minutes directly —
+  // calculate from period start time if available, else null
+  const now = Math.floor(Date.now()/1000);
+  const start = ev.START_TIME;
+  if(!start) return null;
+  const elapsed = Math.floor((now - start) / 60);
+  return Math.min(elapsed, 90);
+}
+
+// ─── Fetch standings from FlashLive ───────────────────────────
 async function fetchStandings(groupLetter){
-  // In demo FT mode, return realistic fake standings
+  // Demo FT mode uses pre-set demo standings
   if(DEMO_MODE && DEMO_TIME === 'ft' && DEMO_STANDINGS[groupLetter]){
     return DEMO_STANDINGS[groupLetter];
   }
+
   const cached = standingsCache[groupLetter];
-  const now = Date.now();
-  // Cache for 2 minutes when live, 10 minutes otherwise
+  const now    = Date.now();
   const anyLive = Object.values(scoreCache).some(s => s.status === 'live');
-  const ttl = anyLive ? 2*60*1000 : 10*60*1000;
+  const ttl    = anyLive ? 2*60*1000 : 10*60*1000;
   if(cached && (now - cached.fetchedAt) < ttl) return cached.rows;
 
+  if(!WC_STAGE_ID || !WC_SEASON_ID){
+    await resolveWCIds();
+    if(!WC_STAGE_ID) return fallbackStandings(groupLetter);
+  }
+
   try {
-    const data = await apiFetch(`/standings?league=${WC_LEAGUE}&season=${WC_SEASON}`);
-    const allGroups = data?.response?.[0]?.league?.standings || [];
+    const data = await apiFetch(
+      `/v1/tournaments/standings?locale=${LOCALE}&standing_type=home_away_total&tournament_stage_id=${WC_STAGE_ID}&tournament_season_id=${WC_SEASON_ID}`
+    );
+    const tables = data?.DATA || [];
 
-    allGroups.forEach(groupArr => {
-      const firstTeam = groupArr[0];
-      const rawGroupName = firstTeam?.group || '';
-      const letter = GROUP_NAME_MAP[rawGroupName];
-      if(!letter) return;
+    // FlashLive returns an array of group tables for a World Cup
+    // Each table has a NAME like "Group A" and ROWS array
+    tables.forEach(table => {
+      const rawName = table.NAME || table.LEAGUE_NAME || '';
+      const match   = rawName.match(/Group\s+([A-L])/i);
+      if(!match) return;
+      const letter = match[1].toUpperCase();
 
-      const rows = groupArr.map((entry, i) => ({
-        pos:  i + 1,
-        name: normName(entry.team?.name || ''),
-        code: FLAG_CODES[normName(entry.team?.name || '')] || 'un',
-        p:    entry.all?.played  ?? 0,
-        w:    entry.all?.win     ?? 0,
-        d:    entry.all?.draw    ?? 0,
-        l:    entry.all?.lose    ?? 0,
-        gf:   entry.all?.goals?.for     ?? 0,
-        ga:   entry.all?.goals?.against ?? 0,
-        pts:  entry.points ?? 0,
+      const rows = (table.ROWS || table.STANDINGS || []).map((row, i) => ({
+        pos:  row.RANK || i + 1,
+        name: normName(row.TEAM_NAME || row.NAME || ''),
+        code: FLAG_CODES[normName(row.TEAM_NAME || row.NAME || '')] || 'un',
+        p:    row.PLAYED       ?? row.GP ?? 0,
+        w:    row.WINS         ?? row.W  ?? 0,
+        d:    row.DRAWS        ?? row.D  ?? 0,
+        l:    row.LOSSES       ?? row.L  ?? 0,
+        gf:   row.GOALS_FOR    ?? row.GF ?? 0,
+        ga:   row.GOALS_AGAINST?? row.GA ?? 0,
+        pts:  row.POINTS       ?? row.PTS?? 0,
       }));
 
       standingsCache[letter] = { rows, fetchedAt: now };
     });
 
     return standingsCache[groupLetter]?.rows || fallbackStandings(groupLetter);
-  } catch(e) {
-    console.warn('Standings fetch failed:', e.message);
+  } catch(e){
+    console.warn('fetchStandings failed:', e.message);
     setProxyStatus('warn');
     return standingsCache[groupLetter]?.rows || fallbackStandings(groupLetter);
   }
@@ -1084,81 +1156,14 @@ function fallbackStandings(groupLetter){
   }));
 }
 
-async function fetchLiveScores(){
-  try {
-    const data = await apiFetch(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}&live=all`);
-    const fixtures = data?.response || [];
-    const now = Date.now();
-    fixtures.forEach(f => {
-      const id = f.fixture?.id;
-      if(!id) return;
-      scoreCache[id] = {
-        apiId:   id,
-        home:    f.goals?.home ?? null,
-        away:    f.goals?.away ?? null,
-        minute:  f.fixture?.status?.elapsed ?? null,
-        status:  'live',
-        fetchedAt: now,
-      };
-    });
-    // Also pull today's finished results so standings reflect completed games
-    fetchTodayResults();
-  } catch(e) {
-    console.warn('Live scores fetch failed:', e.message);
-    setProxyStatus('warn');
-  }
-}
-
-async function fetchTodayResults(){
-  const today = new Date().toISOString().slice(0,10);
-  try {
-    const data = await apiFetch(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}&date=${today}&status=FT`);
-    const fixtures = data?.response || [];
-    const now = Date.now();
-    fixtures.forEach(f => {
-      const id = f.fixture?.id;
-      if(!id) return;
-      if(!scoreCache[id]){
-        scoreCache[id] = {
-          apiId: id,
-          home:  f.goals?.home ?? null,
-          away:  f.goals?.away ?? null,
-          minute: null,
-          status: 'ft',
-          fetchedAt: now,
-        };
-      }
-    });
-  } catch(e) { /* silent — standings will handle it */ }
-}
-
-// Map our fixture list to API fixture IDs on first load
-const apiIdMap = {}; // "date_home" -> apiFixtureId
-async function buildApiIdMap(){
-  try {
-    const data = await apiFetch(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`);
-    const fixtures = data?.response || [];
-    fixtures.forEach(f => {
-      const date = f.fixture?.date?.slice(0,10);
-      const home = normName(f.teams?.home?.name || '');
-      if(date && home) apiIdMap[`${date}_${home}`] = f.fixture.id;
-    });
-  } catch(e) {
-    console.warn('ID map fetch failed:', e.message);
-  }
-}
-
+// ─── Score lookup ──────────────────────────────────────────────
 function getApiScore(fixture){
-  if(DEMO_MODE){
-    return getDemoScore(fixture);
-  }
+  if(DEMO_MODE) return getDemoScore(fixture);
   const key = `${fixture.date}_${fixture.home}`;
-  const id  = apiIdMap[key];
-  if(!id) return null;
-  return scoreCache[id] || null;
+  return scoreCache[key] || null;
 }
 
-// ─── Proxy status indicator ────────────────────────────────────
+// ─── Proxy / API status ────────────────────────────────────────
 function setProxyStatus(state){
   const el = document.getElementById('proxyStatus');
   if(!el) return;
@@ -1166,13 +1171,19 @@ function setProxyStatus(state){
     el.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#C9A84C;margin-right:6px;vertical-align:middle;"></span>Demo mode active';
     return;
   }
+  const count = getReqCount();
+  const pct   = Math.min(Math.round((count / FREE_TIER_LIMIT) * 100), 100);
+  const barCol = pct >= 100 ? '#8B3030' : pct >= 80 ? '#C9A84C' : '#2C9652';
   const states = {
-    ok:   { dot:'#2C9652', text:'Live data connected' },
-    warn: { dot:'#C9A84C', text:'Using cached data' },
-    off:  { dot:'#8B3030', text:'API key needed — see README' },
+    ok:    { dot:'#2C9652', text:`API requests today: ${count} / ${FREE_TIER_LIMIT}` },
+    warn:  { dot:'#C9A84C', text:`API requests today: ${count} / ${FREE_TIER_LIMIT} — using cache` },
+    limit: { dot:'#8B3030', text:`Daily limit reached (${FREE_TIER_LIMIT} / ${FREE_TIER_LIMIT}) — resets at midnight` },
+    off:   { dot:'#8B3030', text:'API key needed — see README' },
   };
   const s = states[state] || states.off;
-  el.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.dot};margin-right:6px;vertical-align:middle;"></span>${s.text}`;
+  el.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.dot};margin-right:6px;vertical-align:middle;"></span>${s.text}`
+    + `<span style="display:inline-block;width:80px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-left:10px;vertical-align:middle;overflow:hidden;">`
+    + `<span style="display:block;width:${pct}%;height:100%;background:${barCol};border-radius:2px;transition:width 0.4s;"></span></span>`;
 }
 
 async function checkProxy(){
@@ -1180,26 +1191,31 @@ async function checkProxy(){
     setProxyStatus('off');
     return false;
   }
+  // If we're already at the limit, don't waste a request checking
+  if(getReqCount() >= FREE_TIER_LIMIT){
+    setProxyStatus('limit');
+    return false;
+  }
   try {
-    await apiFetch(`/timezone`);
+    await apiFetch(`/v1/sports/list`);
     setProxyStatus('ok');
     return true;
-  } catch(e) {
+  } catch(e){
+    if(e.message === 'RATE_LIMIT'){ setProxyStatus('limit'); return false; }
     setProxyStatus('off');
     return false;
   }
 }
 
-// ─── Rendering ─────────────────────────────────────────────────
+// ─── Render ────────────────────────────────────────────────────
 function render(){
-  const now = getNow();
+  const now   = getNow();
   const in24h = new Date(now.getTime() + 24*60*60*1000);
 
   const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('dayDisplay').textContent  = days[now.getDay()];
-  document.getElementById('dateDisplay').textContent =
-    now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('dateDisplay').textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
 
   const todayFixtures = ALL_FIXTURES.filter(f => {
     const ko = getKickoffUTC(f);
@@ -1213,7 +1229,7 @@ function render(){
   });
   const liveSet = new Set(liveFixtures.map(f => f.date+'_'+f.group+'_'+f.home));
 
-  const involvedGroups = [...new Set([...todayFixtures, ...liveFixtures].map(f => f.group))].sort();
+  const involvedGroups = [...new Set([...todayFixtures,...liveFixtures].map(f=>f.group))].sort();
   const mainEl = document.getElementById('mainContent');
 
   if(todayFixtures.length === 0 && liveFixtures.length === 0){
@@ -1240,9 +1256,12 @@ function render(){
     return;
   }
 
-  const allShow = [...liveFixtures.filter(f => !todayFixtures.find(t => t.date===f.date&&t.home===f.home)), ...todayFixtures];
+  const allShow = [
+    ...liveFixtures.filter(f => !todayFixtures.find(t => t.date===f.date && t.home===f.home)),
+    ...todayFixtures
+  ];
 
-  let html = `<div class="games-count"><span>${allShow.length}</span> match${allShow.length !== 1 ? 'es' : ''} in the next 24 hours</div>`;
+  let html = `<div class="games-count"><span>${allShow.length}</span> match${allShow.length!==1?'es':''} in the next 24 hours</div>`;
   html += `<div class="games-grid">`;
 
   allShow.forEach(f => {
@@ -1255,21 +1274,19 @@ function render(){
 
     let scoreHtml = '';
     if(isLive && hasScore){
-      scoreHtml = `
-        <div class="live-score">
-          <span class="score-num">${score.home}</span>
-          <span class="score-sep">–</span>
-          <span class="score-num">${score.away}</span>
-          ${score.minute ? `<span class="score-min">${score.minute}'</span>` : ''}
-        </div>`;
+      scoreHtml = `<div class="live-score">
+        <span class="score-num">${score.home}</span>
+        <span class="score-sep">–</span>
+        <span class="score-num">${score.away}</span>
+        ${score.minute ? `<span class="score-min">${score.minute}'</span>` : ''}
+      </div>`;
     } else if(!isLive && hasScore){
-      scoreHtml = `
-        <div class="final-score">
-          <span class="score-num">${score.home}</span>
-          <span class="score-sep">–</span>
-          <span class="score-num">${score.away}</span>
-          <span class="score-ft">FT</span>
-        </div>`;
+      scoreHtml = `<div class="final-score">
+        <span class="score-num">${score.home}</span>
+        <span class="score-sep">–</span>
+        <span class="score-num">${score.away}</span>
+        <span class="score-ft">FT</span>
+      </div>`;
     }
 
     html += `
@@ -1278,19 +1295,18 @@ function render(){
           <span class="group-badge">Group ${f.group}</span>
           ${isLive
             ? `<span class="live-badge">⚽ Live</span>`
-            : `<span class="kickoff-time">🕐 ${localStr}</span>`
-          }
+            : `<span class="kickoff-time">🕐 ${localStr}</span>`}
         </div>
         <div class="teams-row">
           <div class="team">
-            <div class="flag">${flagImg(FLAG_CODES[f.home] || FLAG_CODES[normName(f.home)] || "un", "lg")}</div>
+            <div class="flag">${flagImg(FLAG_CODES[f.home] || FLAG_CODES[normName(f.home)] || 'un', 'lg')}</div>
             <div class="team-name">${f.home}</div>
           </div>
           <div class="vs-divider">
-            ${hasScore ? scoreHtml : `<span class="vs-text">VS</span>`}
+            ${hasScore ? scoreHtml : '<span class="vs-text">VS</span>'}
           </div>
           <div class="team">
-            <div class="flag">${flagImg(FLAG_CODES[f.away] || FLAG_CODES[normName(f.away)] || "un", "lg")}</div>
+            <div class="flag">${flagImg(FLAG_CODES[f.away] || FLAG_CODES[normName(f.away)] || 'un', 'lg')}</div>
             <div class="team-name">${f.away}</div>
           </div>
         </div>
@@ -1302,10 +1318,8 @@ function render(){
         </div>
       </div>`;
   });
-
   html += `</div>`;
 
-  // Group standings — rendered async, placeholders shown immediately
   if(involvedGroups.length > 0){
     html += `<div class="section-header">Group Standings</div>`;
     html += `<div class="groups-grid" id="standingsGrid"></div>`;
@@ -1314,7 +1328,6 @@ function render(){
   mainEl.innerHTML = html;
   buildTicker(allShow);
 
-  // Now fill standings asynchronously per group
   if(involvedGroups.length > 0){
     involvedGroups.forEach(g => renderGroupCard(g, allShow));
   }
@@ -1323,20 +1336,14 @@ function render(){
 async function renderGroupCard(g, allShow){
   const grid = document.getElementById('standingsGrid');
   if(!grid) return;
-
   const playingNow = new Set(allShow.filter(f=>f.group===g).flatMap(f=>[f.home,f.away]));
-
-  // Show placeholder immediately
-  let placeholder = document.createElement('div');
+  const placeholder = document.createElement('div');
   placeholder.className = 'group-card';
   placeholder.id = `gc-${g}`;
-  placeholder.innerHTML = `
-    <div class="group-card-title">Group ${g}</div>
-    <div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Loading standings…</div>`;
+  placeholder.innerHTML = `<div class="group-card-title">Group ${g}</div><div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Loading standings…</div>`;
   grid.appendChild(placeholder);
 
   const standings = await fetchStandings(g);
-
   const card = document.getElementById(`gc-${g}`);
   if(!card) return;
 
@@ -1346,42 +1353,35 @@ async function renderGroupCard(g, allShow){
       <thead><tr>
         <th class="col-team" colspan="2"></th>
         <th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th>
-      </tr></thead>
-      <tbody>`;
+      </tr></thead><tbody>`;
 
   standings.forEach((t, i) => {
     const isPlaying = playingNow.has(t.name);
     tableHtml += `
       <tr class="${isPlaying ? 'playing-row' : ''}">
-        <td class="col-team" style="display:table-cell;padding-right:6px;width:18px;">
-          <span class="pos-num">${i+1}</span>
-        </td>
+        <td class="col-team" style="display:table-cell;padding-right:6px;width:18px;"><span class="pos-num">${i+1}</span></td>
         <td class="col-team">
-          <span class="team-flag-sm">${flagImg(t.code || FLAG_CODES[t.name] || "un", "sm")}</span>
+          <span class="team-flag-sm">${flagImg(t.code || FLAG_CODES[t.name] || 'un', 'sm')}</span>
           <span>${t.name}</span>
           ${isPlaying ? '<span class="playing-indicator"></span>' : ''}
         </td>
-        <td>${t.p}</td>
-        <td>${t.w}</td>
-        <td>${t.d}</td>
-        <td>${t.l}</td>
+        <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
         <td class="pts-col">${t.pts}</td>
       </tr>`;
   });
-
   tableHtml += `</tbody></table>`;
   card.innerHTML = tableHtml;
 }
 
 function buildTicker(fixtures){
   const items = fixtures.length > 0
-    ? fixtures.flatMap(f => {
-        const score = getApiScore(f);
+    ? fixtures.map(f => {
+        const score    = getApiScore(f);
         const hasScore = score && score.home !== null && score.away !== null;
-        const ko = getKickoffUTC(f);
-        const t  = formatLocalTime(ko);
+        const ko       = getKickoffUTC(f);
+        const t        = formatLocalTime(ko);
         const scoreStr = hasScore ? ` · <strong>${score.home}–${score.away}</strong>` : ` · ${t}`;
-        return [`<span class="ticker-item"><strong>Group ${f.group}:</strong> ${f.home} vs ${f.away}${scoreStr} · ${f.venue}</span>`];
+        return `<span class="ticker-item"><strong>Group ${f.group}:</strong> ${f.home} vs ${f.away}${scoreStr} · ${f.venue}</span>`;
       })
     : [`<span class="ticker-item">World Cup 2026 · USA · Canada · Mexico · June 11 – July 19, 2026 · 48 Teams · 104 Matches</span>`];
 
@@ -1389,24 +1389,36 @@ function buildTicker(fixtures){
   document.getElementById('tickerContent').innerHTML = doubled;
 }
 
+function updateReqDisplay(){
+  // Re-render the status bar with latest count without changing state
+  const el = document.getElementById('proxyStatus');
+  if(!el || DEMO_MODE) return;
+  const count = getReqCount();
+  if(count >= FREE_TIER_LIMIT){
+    setProxyStatus('limit');
+  }
+  // Otherwise the next setProxyStatus('ok'/'warn') call will update it naturally
+}
+
 // ─── Boot & refresh loop ───────────────────────────────────────
 let refreshInterval;
 
 async function boot(){
-  const proxyOk = await checkProxy();
-  if(proxyOk){
-    await buildApiIdMap();
+  const apiOk = await checkProxy();
+  if(apiOk){
+    await resolveWCIds();
     await fetchLiveScores();
+    await fetchTodayResults();
   }
   render();
 
-  // During live matches refresh every 60s, otherwise every 3 minutes
   clearInterval(refreshInterval);
   refreshInterval = setInterval(async () => {
-    const proxyOk = await checkProxy();
-    if(proxyOk){
+    const apiOk = await checkProxy();
+    if(apiOk){
       await fetchLiveScores();
-      // Bust standings cache for active groups so they re-fetch
+      await fetchTodayResults();
+      // Bust standings cache for currently live groups
       const now = getNow();
       ALL_FIXTURES.forEach(f => {
         const ko = getKickoffUTC(f);
@@ -1424,7 +1436,7 @@ boot();
 </script>
 
 <footer>
-  World Cup 2026 · All times shown in your local timezone · Powered by API-Football via RapidAPI
+  World Cup 2026 · All times shown in your local timezone · Powered by IT Guru Jordan
 </footer>
 
 </body>
