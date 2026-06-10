@@ -1151,11 +1151,22 @@ function getApiScore(fixture){
 
 // ─── Get today's fixtures from hardcoded schedule (fallback) ──
 function getTodayFromSchedule(){
-  const now   = getNow();
-  const in24h = new Date(now.getTime() + 24*60*60*1000);
+  const now = getNow();
+  // Use local date string so we match fixtures on today's calendar date in the
+  // user's timezone — prevents early-hours UTC fixtures bleeding into the previous day
+  const todayLocal = now.toLocaleDateString('en-CA'); // 'YYYY-MM-DD' in local time
+  // Also include tomorrow's very-early-hours fixtures (e.g. a 01:00 BST kick-off
+  // that is still "tonight" to an office viewer) — but only up to 04:00 local
+  const tomorrowLocal = new Date(now);
+  tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
+  const tomorrowStr = tomorrowLocal.toLocaleDateString('en-CA');
   return ALL_FIXTURES.filter(f => {
-    const ko = getKickoffUTC(f);
-    return ko >= now && ko <= in24h;
+    const ko      = getKickoffUTC(f);
+    const koLocal = ko.toLocaleDateString('en-CA');
+    // Show if kick-off is today locally, OR if it's tomorrow but before 04:00 local
+    if(koLocal === todayLocal) return true;
+    if(koLocal === tomorrowStr && ko.getHours() < 4) return true;
+    return false;
   });
 }
 
