@@ -1162,13 +1162,16 @@ function getTodayFromSchedule(){
   const now   = getNow();
   const in24h = new Date(now.getTime() + 24*60*60*1000);
 
+  // Local midnight = start of today in the browser's timezone
+  // new Date(y, m, d) uses LOCAL time, so this is correct in BST
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
   return ALL_FIXTURES.filter(f => {
     const ko = getKickoffUTC(f);
-    // Must be within the next 24 hours
-    if(ko < now || ko > in24h) return false;
-    // Skip games that kick off before 07:00 in the browser's local time —
-    // they'll be finished before the office opens and aren't worth showing
-    if(ko.getHours() < 7) return false;
+    // Must kick off after local midnight today (not a previous day's game)
+    if(ko < todayMidnight) return false;
+    // Must kick off within the next 24 hours
+    if(ko > in24h) return false;
     return true;
   });
 }
