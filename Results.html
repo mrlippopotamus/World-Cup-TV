@@ -455,7 +455,7 @@
 </div>
 
 <footer>
-  World Cup 2026 · Results updated daily at 7:00 · Powered by FlashLive Sports via RapidAPI
+  World Cup 2026 · Results updated daily at 7:00 · Powered by IT Guru Jordan
 </footer>
 
 <script>
@@ -626,7 +626,12 @@ async function resolveWCIds(){
     for(const t of (data?.DATA || [])){
       const name    = (t.LEAGUE_NAME || '').toLowerCase();
       const country = (t.COUNTRY_NAME || '').toLowerCase();
-      if((name.includes('world cup') || name.includes('fifa world cup')) && country === 'world'){
+      // FlashLive files the World Cup under "World Championship" with country "World"
+      const isWorldCupTournament = country === 'world' && (
+        name.includes('world cup') || name.includes('fifa world cup') ||
+        name.includes('world championship')
+      );
+      if(isWorldCupTournament){
         WC_STAGE_ID  = t.STAGES?.[0]?.STAGE_ID || null;
         WC_SEASON_ID = t.ACTUAL_TOURNAMENT_SEASON_ID || null;
         return true;
@@ -639,13 +644,34 @@ async function resolveWCIds(){
 // ─── Fetch yesterday's results ─────────────────────────────────
 async function fetchResults(){
   try {
-    // Fetch yesterday's finished matches
     const data = await apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=-1`);
     const results = [];
+
+    // Log all group/tournament names so we can see what FlashLive calls the World Cup
+    const allNames = (data?.DATA || []).map(g => g.NAME || g.LEAGUE_NAME || '');
+    console.log('[FlashLive] Tournament names in yesterday response:', allNames);
+
     (data?.DATA || []).forEach(group => {
-      if(!(group.NAME || '').toLowerCase().includes('world cup')) return;
+      const name    = (group.NAME || group.LEAGUE_NAME || '').toLowerCase();
+      const country = (group.COUNTRY_NAME || '').toLowerCase();
+      // FlashLive files the 2026 World Cup under "World: World Championship"
+      const isWC = country === 'world' && (
+        name.includes('world cup') || name.includes('world championship')
+      );
+      if(!isWC) return;
+
       (group.EVENTS || []).forEach(ev => {
-        if(ev.STAGE_TYPE !== 'FINISHED') return;
+        // Accept FINISHED or any non-live stage (some APIs use different keys)
+        const stage = (ev.STAGE_TYPE || ev.STATUS || '').toUpperCase();
+        // Log every event so we can see stage types in the console
+        console.log('[FlashLive] Event:', ev.HOME_NAME, 'vs', ev.AWAY_NAME, '| STAGE_TYPE:', ev.STAGE_TYPE, '| FINISHED:', ev.FINISHED, '| Score:', ev.HOME_SCORE_CURRENT, '-', ev.AWAY_SCORE_CURRENT);
+        const finished = stage === 'FINISHED' || stage === 'FT'    || stage === 'ENDED'
+                      || stage === 'COMPLETE'  || stage === 'FINAL' || stage === 'AET'
+                      || stage === 'PEN'       || stage === 'AFTER EXTRA TIME'
+                      || ev.FINISHED === 1     || ev.FINISHED === true
+                      // FlashLive sometimes uses numeric stage codes; anything > 90 is typically finished
+                      || (typeof ev.STAGE_TYPE === 'number' && ev.STAGE_TYPE > 90);
+        if(!finished) return;
         const home = normName(ev.HOME_NAME || '');
         const away = normName(ev.AWAY_NAME || '');
         const fixture = ALL_FIXTURES.find(f => f.home === home && f.away === away)
@@ -653,20 +679,21 @@ async function fetchResults(){
         results.push({
           home,
           away,
-          homeCode: FLAG_CODES[home] || 'un',
-          awayCode: FLAG_CODES[away] || 'un',
+          homeCode:  FLAG_CODES[home] || 'un',
+          awayCode:  FLAG_CODES[away] || 'un',
           homeScore: parseInt(ev.HOME_SCORE_CURRENT) ?? null,
           awayScore: parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
-          group:     fixture?.group  || '?',
-          venue:     fixture?.venue  || '',
+          group:     fixture?.group || '?',
+          venue:     fixture?.venue || '',
           kickoff:   new Date((ev.START_TIME || 0) * 1000),
         });
       });
     });
-    // Sort by kickoff time
+
     results.sort((a, b) => a.kickoff - b.kickoff);
+    console.log('[FlashLive] Results found:', results.length);
     return results;
-  } catch(e){ console.warn('fetchResults:', e.message); return []; }
+  } catch(e){ console.warn('fetchResults error:', e.message); return []; }
 }
 
 // ─── Fetch standings ───────────────────────────────────────────
