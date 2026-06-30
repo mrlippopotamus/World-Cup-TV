@@ -657,29 +657,6 @@
   </div>
 </header>
 
-<button id="demoToggleBtn" onclick="toggleDemo()" style="
-  position:fixed;bottom:56px;right:20px;z-index:998;
-  background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);
-  border-radius:8px;color:#C9A84C;font-size:11px;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">
-  ⚽ Demo Mode
-</button>
-
-<div id="demoBar" style="display:none;" class="demo-bar">
-  <div class="demo-bar-left">
-    <span class="demo-label">Demo</span>
-    <span class="demo-date">17 June 2026</span>
-    <div class="demo-time-controls">
-      <button class="demo-time-btn" onclick="setDemoTime('pre')"    id="dt-pre">Pre-Match</button>
-      <button class="demo-time-btn" onclick="setDemoTime('live1')"  id="dt-live1">1st Half</button>
-      <button class="demo-time-btn" onclick="setDemoTime('ht')"     id="dt-ht">Half Time</button>
-      <button class="demo-time-btn" onclick="setDemoTime('live2')"  id="dt-live2">2nd Half</button>
-      <button class="demo-time-btn" onclick="setDemoTime('ft')"     id="dt-ft">Full Time</button>
-    </div>
-  </div>
-  <button class="demo-exit" onclick="exitDemo()">✕ Exit Demo</button>
-</div>
-
 <div id="mainContent"></div>
 
 <div class="ticker-bar">
@@ -824,117 +801,9 @@ function getDaysUntilWorldCup(){
   return Math.ceil(diff / (1000*60*60*24));
 }
 
-// ─── Demo Mode ────────────────────────────────────────────────
-// Simulates June 17 2026 at various match states with fake scores.
-// Portugal vs DR Congo is shown as the "live" match in all mid-game states.
-let DEMO_MODE = false;
-let DEMO_TIME = 'pre'; // pre | live1 | ht | live2 | ft
-
-// Demo: fake "now" timestamps relative to June 17 fixtures
-// Portugal vs DR Congo kicks off at 17:00 UTC
-const DEMO_KICKOFF = new Date('2026-06-17T17:00:00Z');
-
-const DEMO_TIMES = {
-  pre:   new Date('2026-06-17T16:30:00Z'), // 30min before KO
-  live1: new Date('2026-06-17T17:35:00Z'), // 35 min in
-  ht:    new Date('2026-06-17T17:50:00Z'), // half time
-  live2: new Date('2026-06-17T18:20:00Z'), // 65 min in
-  ft:    new Date('2026-06-17T19:05:00Z'), // full time
-};
-
-// Fake scores for demo fixtures keyed by "date_home"
-const DEMO_SCORES = {
-  pre: {},
-  live1: {
-    '2026-06-17_Portugal':    { home:1, away:0, minute:35, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  ht: {
-    '2026-06-17_Portugal':    { home:1, away:0, minute:45, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  live2: {
-    '2026-06-17_Portugal':    { home:2, away:1, minute:65, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  ft: {
-    '2026-06-17_Portugal':    { home:2, away:1, minute:null, status:'ft' },
-    '2026-06-17_England':     { home:3, away:0, minute:null, status:'ft' },
-    '2026-06-17_Ghana':       { home:1, away:1, minute:null, status:'ft' },
-    '2026-06-17_Uzbekistan':  null,
-  },
-};
-
-// Demo group standings (after 1 game each in Groups K and L — FT state)
-const DEMO_STANDINGS = {
-  K: [
-    { pos:1, name:'Portugal',   code:'pt', p:1, w:1, d:0, l:0, gf:2, ga:1, pts:3 },
-    { pos:2, name:'Colombia',   code:'co', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:3, name:'Uzbekistan', code:'uz', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:4, name:'DR Congo',   code:'cd', p:1, w:0, d:0, l:1, gf:1, ga:2, pts:0 },
-  ],
-  L: [
-    { pos:1, name:'England',    code:'gb-eng', p:1, w:1, d:0, l:0, gf:3, ga:0, pts:3 },
-    { pos:2, name:'Ghana',      code:'gh', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:3, name:'Panama',     code:'pa', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:4, name:'Croatia',    code:'hr', p:1, w:0, d:0, l:1, gf:0, ga:3, pts:0 },
-  ],
-};
-
 function getNow(){
   if(DEMO_MODE) return new Date(DEMO_TIMES[DEMO_TIME]);
   return new Date();
-}
-
-function getDemoScore(fixture){
-  if(!DEMO_MODE) return null;
-  const key = `${fixture.date}_${fixture.home}`;
-  const scores = DEMO_SCORES[DEMO_TIME] || {};
-  return scores[key] !== undefined ? scores[key] : null;
-}
-
-function toggleDemo(){
-  if(DEMO_MODE){ exitDemo(); return; }
-  DEMO_MODE = true;
-  DEMO_TIME = 'pre';
-  document.getElementById('demoBar').style.display = 'flex';
-  document.getElementById('demoToggleBtn').style.display = 'none';
-  document.body.classList.add('demo-active');
-  updateDemoButtons();
-  refreshAll();
-}
-
-function exitDemo(){
-  DEMO_MODE = false;
-  document.getElementById('demoBar').style.display = 'none';
-  document.getElementById('demoToggleBtn').style.display = 'block';
-  document.body.classList.remove('demo-active');
-  refreshAll();
-}
-
-function setDemoTime(t){
-  DEMO_TIME = t;
-  updateDemoButtons();
-  refreshAll();
-}
-
-function updateDemoButtons(){
-  ['pre','live1','ht','live2','ft'].forEach(t => {
-    const el = document.getElementById('dt-'+t);
-    if(el) el.classList.toggle('active', t === DEMO_TIME);
-  });
-}
-
-function refreshAll(){
-  // Clear standings cache so demo standings show fresh
-  Object.keys(standingsCache).forEach(k => delete standingsCache[k]);
-  render();
 }
 
 // ─── API config ───────────────────────────────────────────────
