@@ -14,7 +14,7 @@
     --gold-light: #E8C96A;
     --green-dark: #0F3D25;
     --green-mid: #155230;
-    --green-pitch: #1E7A44
+    --green-pitch: #1E7A44;
     --green-light: #33AA5E;
     --white: #F5F0E8;
     --offwhite: #E8DFC8;
@@ -22,7 +22,6 @@
     --card-bg: rgba(20, 70, 42, 0.85);
     --card-border: rgba(201, 168, 76, 0.4);
     --group-tag: rgba(201, 168, 76, 0.15);
-   
   }
 
   html, body {
@@ -35,20 +34,20 @@
 
   body {
     background:
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(44,150,82,0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(44,150,82,0.25) 0%, transparent 70%),
       repeating-linear-gradient(
         90deg,
         transparent,
         transparent 60px,
-        rgba(255,255,255,0.012) 60px,
-        rgba(255,255,255,0.012) 61px
+        rgba(255,255,255,0.02) 60px,
+        rgba(255,255,255,0.02) 61px
       ),
       repeating-linear-gradient(
         0deg,
         transparent,
         transparent 60px,
-        rgba(255,255,255,0.012) 60px,
-        rgba(255,255,255,0.012) 61px
+        rgba(255,255,255,0.02) 60px,
+        rgba(255,255,255,0.02) 61px
       ),
       var(--green-dark);
     min-height: 100vh;
@@ -200,7 +199,7 @@
 
   .match-card.live {
     border-color: rgba(44,150,82,0.7);
-    box-shadow: 0 0 24px rgba(44,150,82,0.15);
+    box-shadow: 0 0 24px rgba(44,150,82,0.25);
   }
 
   .match-card.live::before {
@@ -358,7 +357,7 @@
   }
 
   .group-card {
-    background: rgba(15, 50, 30, 0.6);
+    background: rgba(20, 70, 42, 0.65);
     border: 1px solid rgba(201,168,76,0.2);
     border-radius: 12px;
     padding: 20px 22px;
@@ -585,7 +584,7 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: 44px;
-    background: rgba(10, 42, 26, 0.97);
+    background: rgba(15, 58, 35, 0.97);
     border-top: 1px solid var(--card-border);
     display: flex;
     align-items: center;
@@ -657,6 +656,14 @@
     <div class="proxy-status" id="proxyStatus" style="margin-top:6px;text-align:right;"></div>
   </div>
 </header>
+
+<button id="demoToggleBtn" onclick="toggleDemo()" style="
+  position:fixed;bottom:56px;right:20px;z-index:998;
+  background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);
+  border-radius:8px;color:#C9A84C;font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">
+  ⚽ Demo Mode
+</button>
 
 <div id="demoBar" style="display:none;" class="demo-bar">
   <div class="demo-bar-left">
@@ -990,7 +997,12 @@ async function resolveWCIds(){
     for(const t of (data?.DATA || [])){
       const name    = (t.LEAGUE_NAME || '').toLowerCase();
       const country = (t.COUNTRY_NAME || '').toLowerCase();
-      if((name.includes('world cup') || name.includes('fifa world cup')) && country === 'world'){
+      // FlashLive files the World Cup under "World Championship" with country "World"
+      const isWorldCupTournament = country === 'world' && (
+        name.includes('world cup') || name.includes('fifa world cup') ||
+        name.includes('world championship')
+      );
+      if(isWorldCupTournament){
         WC_STAGE_ID  = t.STAGES?.[0]?.STAGE_ID || null;
         WC_SEASON_ID = t.ACTUAL_TOURNAMENT_SEASON_ID || null;
         return true;
@@ -1001,23 +1013,50 @@ async function resolveWCIds(){
 }
 
 // ─── Fetch today's fixtures from FlashLive ────────────────────
+// Knockout round names FlashLive may use in the ROUND field, mapped to a
+// short display label since these matches have no "Group" letter.
+function knockoutRoundLabel(roundStr){
+  const r = (roundStr || '').toLowerCase();
+  if(r.includes('final') && !r.includes('semi') && !r.includes('quarter')) return 'Final';
+  if(r.includes('3rd') || r.includes('third place')) return '3rd Place';
+  if(r.includes('semi'))   return 'Semi-Final';
+  if(r.includes('quarter')) return 'Quarter-Final';
+  if(r.includes('16'))     return 'Round of 16';
+  if(r.includes('32'))     return 'Round of 32';
+  return 'Knockout';
+}
+
 async function fetchTodayFixtures(){
   try {
     const data = await apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=0`);
     const result = [];
     (data?.DATA || []).forEach(group => {
-      if(!(group.NAME||'').toLowerCase().includes('world cup')) return;
+      const name    = (group.NAME || group.LEAGUE_NAME || '').toLowerCase();
+      const country = (group.COUNTRY_NAME || '').toLowerCase();
+      // FlashLive files the 2026 World Cup under "World: World Championship"
+      const isWC = country === 'world' && (
+        name.includes('world cup') || name.includes('world championship')
+      );
+      if(!isWC) return;
+
       (group.EVENTS || []).forEach(ev => {
         const home = normName(ev.HOME_NAME || '');
         const away = normName(ev.AWAY_NAME || '');
-        // Find matching fixture in our schedule for venue/group info
+        // Find matching fixture in our group-stage schedule for venue/group info
         const match = ALL_FIXTURES.find(f => f.home === home || f.away === away || f.home === away || f.away === home);
+
+        // Group stage match → use known group letter.
+        // Knockout match (no match found, or round indicates knockout) → label by round instead.
+        const roundLabel = knockoutRoundLabel(ev.ROUND || '');
+        const isKnockout  = !match || /round of|quarter|semi|final|3rd|knockout/i.test(ev.ROUND || '');
+
         result.push({
           home, away,
           homeCode: FLAG_CODES[home] || 'un',
           awayCode: FLAG_CODES[away] || 'un',
-          group:    match?.group  || '?',
-          venue:    match?.venue  || '',
+          group:    isKnockout ? roundLabel : match.group,
+          isKnockout,
+          venue:    match?.venue || ev.VENUE_NAME || '',
           kickoff:  new Date(ev.START_TIME * 1000),
           homeFT:   ev.STAGE_TYPE === 'FINISHED' ? parseInt(ev.HOME_SCORE_CURRENT) : null,
           awayFT:   ev.STAGE_TYPE === 'FINISHED' ? parseInt(ev.AWAY_SCORE_CURRENT) : null,
@@ -1212,7 +1251,7 @@ function render(){
         homeFT: null, awayFT: null,
       }));
 
-  const involvedGroups = [...new Set(todayFixtures.map(f => f.group).filter(g => g !== '?'))].sort();
+  const involvedGroups = [...new Set(todayFixtures.filter(f => !f.isKnockout).map(f => f.group).filter(g => g !== '?'))].sort();
   const mainEl = document.getElementById('mainContent');
 
   if(todayFixtures.length === 0){
@@ -1254,7 +1293,7 @@ function render(){
     html += `
       <div class="match-card">
         <div class="card-top">
-          <span class="group-badge">Group ${f.group}</span>
+          <span class="group-badge">${f.isKnockout ? f.group : "Group " + f.group}</span>
           <span class="kickoff-time">🕐 ${localStr}</span>
         </div>
         <div class="teams-row">
@@ -1325,7 +1364,7 @@ function buildTicker(fixtures){
         const hasScore = score && score.home !== null && score.away !== null;
         const t        = f.kickoff.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
         const scoreStr = hasScore ? ` · <strong>${score.home}–${score.away} FT</strong>` : ` · ${t}`;
-        return `<span class="ticker-item"><strong>Group ${f.group}:</strong> ${f.home} vs ${f.away}${scoreStr} · ${f.venue}</span>`;
+        return `<span class="ticker-item"><strong>${f.isKnockout ? f.group : "Group " + f.group}:</strong> ${f.home} vs ${f.away}${scoreStr} · ${f.venue}</span>`;
       })
     : [`<span class="ticker-item">World Cup 2026 · USA · Canada · Mexico · June 11 – July 19, 2026 · 48 Teams · 104 Matches</span>`];
   document.getElementById('tickerContent').innerHTML = [...items, ...items].join('');
