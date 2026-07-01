@@ -332,101 +332,6 @@
   }
 
   /* ── GROUP BREAKDOWN SECTION ── */
-  .section-header {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--gold);
-    margin: 52px 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .section-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--card-border);
-  }
-
-  .groups-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  .group-card {
-    background: rgba(20, 70, 42, 0.65);
-    border: 1px solid rgba(201,168,76,0.2);
-    border-radius: 12px;
-    padding: 20px 22px;
-  }
-
-  .group-card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    margin-bottom: 12px;
-  }
-
-  .standings-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  .standings-table thead tr {
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-
-  .standings-table th {
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 600;
-    padding: 0 0 7px;
-    text-align: right;
-  }
-
-  .standings-table th.col-team {
-    text-align: left;
-  }
-
-  .standings-table td {
-    padding: 6px 0;
-    text-align: right;
-    color: var(--offwhite);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-
-  .standings-table td.col-team {
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .standings-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .standings-table tr.playing-row td {
-    color: var(--white);
-    font-weight: 700;
-  }
-
-  .standings-table td.pts-col {
-    color: var(--gold);
-    font-weight: 700;
-    font-size: 14px;
-  }
-
-  .standings-table tr.playing-row td.pts-col {
-    color: var(--gold-light);
-  }
 
   .team-flag-sm {
     width: 22px;
@@ -532,54 +437,6 @@
     letter-spacing: 1px;
   }
 
-  /* ── DEMO MODE ── */
-  .demo-bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 999;
-    background: rgba(201,168,76,0.97);
-    color: #0A2A1A;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 20px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-  }
-  .demo-bar-left { display:flex; align-items:center; gap:10px; }
-  .demo-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.7; }
-  .demo-date { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; }
-  .demo-time-controls { display:flex; align-items:center; gap:6px; }
-  .demo-time-btn {
-    background: rgba(10,42,26,0.2);
-    border: 1px solid rgba(10,42,26,0.3);
-    border-radius: 6px;
-    color: #0A2A1A;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 10px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .demo-time-btn:hover { background: rgba(10,42,26,0.35); }
-  .demo-time-btn.active { background: rgba(10,42,26,0.5); color:#E8C96A; }
-  .demo-exit {
-    background: rgba(10,42,26,0.25);
-    border: 1px solid rgba(10,42,26,0.35);
-    border-radius: 6px;
-    color: #0A2A1A;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 5px 14px;
-    cursor: pointer;
-    letter-spacing: 1px;
-  }
-  .demo-exit:hover { background: rgba(10,42,26,0.4); }
-  body.demo-active { padding-top: 80px; }
-
   .ticker-bar {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -657,30 +514,8 @@
   </div>
 </header>
 
-<button id="demoToggleBtn" onclick="toggleDemo()" style="
-  position:fixed;bottom:56px;right:20px;z-index:998;
-  background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);
-  border-radius:8px;color:#C9A84C;font-size:11px;font-weight:700;
-  letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">
-  ⚽ Demo Mode
-</button>
-
-<div id="demoBar" style="display:none;" class="demo-bar">
-  <div class="demo-bar-left">
-    <span class="demo-label">Demo</span>
-    <span class="demo-date">17 June 2026</span>
-    <div class="demo-time-controls">
-      <button class="demo-time-btn" onclick="setDemoTime('pre')"    id="dt-pre">Pre-Match</button>
-      <button class="demo-time-btn" onclick="setDemoTime('live1')"  id="dt-live1">1st Half</button>
-      <button class="demo-time-btn" onclick="setDemoTime('ht')"     id="dt-ht">Half Time</button>
-      <button class="demo-time-btn" onclick="setDemoTime('live2')"  id="dt-live2">2nd Half</button>
-      <button class="demo-time-btn" onclick="setDemoTime('ft')"     id="dt-ft">Full Time</button>
-    </div>
-  </div>
-  <button class="demo-exit" onclick="exitDemo()">✕ Exit Demo</button>
-</div>
-
 <div id="mainContent"></div>
+
 
 <div class="ticker-bar">
   <div class="ticker-label">⚽ WC 2026</div>
@@ -768,41 +603,55 @@ const FLAG_CODES = {
 
 function flagImg(code, size, cls){
   size = size || 'lg'; cls = cls || '';
-  const c = (code || 'un').toLowerCase();
   const dims = {sm:'20x15', md:'32x24', lg:'56x42', xl:'80x60'};
   const d = dims[size] || dims.lg;
   const parts = d.split('x');
   const dw = parseInt(parts[0])*2, dh = parseInt(parts[1])*2;
+  // If no code found, return a neutral placeholder rather than a broken image
+  if(!code || code === 'un'){
+    return '<span style="display:inline-block;width:'+parts[0]+'px;height:'+parts[1]+'px;'
+         + 'background:rgba(255,255,255,0.08);border-radius:4px;"></span>';
+  }
+  const c = code.toLowerCase();
   return '<img src="https://flagcdn.com/'+d+'/'+c+'.png"'
        + ' srcset="https://flagcdn.com/'+dw+'x'+dh+'/'+c+'.png 2x"'
        + ' width="'+parts[0]+'" height="'+parts[1]+'"'
        + ' alt="" loading="lazy"'
        + ' style="border-radius:4px;object-fit:cover;display:block;"'
+       + ' onerror="this.style.display='none'"'
        + ' class="'+cls+'">';
 }
 
 const TEAM_NAME_MAP = {
-  'Korea Republic':'South Korea', 'Czech Republic':'Czechia',
+  // South Korea
+  'Korea Republic':'South Korea', 'Republic of Korea':'South Korea',
+  // Czechia
+  'Czech Republic':'Czechia',
+  // Bosnia
   'Bosnia':'Bosnia & Herz.', 'Bosnia and Herzegovina':'Bosnia & Herz.',
-  "Côte d'Ivoire":"Ivory Coast", 'Congo DR':'DR Congo',
-  'Turkey':'Türkiye', 'Curacao':'Curaçao',
+  'Bosnia-Herzegovina':'Bosnia & Herz.', 'Bosnia & Herzegovina':'Bosnia & Herz.',
+  // Ivory Coast
+  "Côte d'Ivoire":"Ivory Coast", "Cote d'Ivoire":"Ivory Coast", 'Cote dIvoire':'Ivory Coast',
+  // DR Congo
+  'Congo DR':'DR Congo', 'Democratic Republic of Congo':'DR Congo',
+  'Republic of Congo':'DR Congo', 'DR of Congo':'DR Congo',
+  // Turkey
+  'Turkey':'Türkiye',
+  // Curaçao
+  'Curacao':'Curaçao',
+  // Morocco (FlashLive sometimes uses French name)
+  'Maroc':'Morocco', 'Marocco':'Morocco',
+  // USA variants
+  'United States':'USA', 'United States of America':'USA',
+  // Iran
+  'IR Iran':'Iran',
+  // New Zealand
+  'New Zealand':'New Zealand',
+  // Scotland/England (in case FlashLive drops the GB prefix)
+  'Scotland':'Scotland', 'England':'England',
 };
 function normName(n){ return TEAM_NAME_MAP[n] || n; }
 
-const GROUP_TEAMS = {
-  "A": [{code:"mx",name:"Mexico"},{code:"za",name:"South Africa"},{code:"kr",name:"South Korea"},{code:"cz",name:"Czechia"}],
-  "B": [{code:"ca",name:"Canada"},{code:"qa",name:"Qatar"},{code:"ch",name:"Switzerland"},{code:"ba",name:"Bosnia & Herz."}],
-  "C": [{code:"br",name:"Brazil"},{code:"ma",name:"Morocco"},{code:"ht",name:"Haiti"},{code:"gb-sct",name:"Scotland"}],
-  "D": [{code:"us",name:"USA"},{code:"py",name:"Paraguay"},{code:"au",name:"Australia"},{code:"tr",name:"Türkiye"}],
-  "E": [{code:"de",name:"Germany"},{code:"cw",name:"Curaçao"},{code:"ci",name:"Ivory Coast"},{code:"ec",name:"Ecuador"}],
-  "F": [{code:"nl",name:"Netherlands"},{code:"jp",name:"Japan"},{code:"tn",name:"Tunisia"},{code:"se",name:"Sweden"}],
-  "G": [{code:"be",name:"Belgium"},{code:"eg",name:"Egypt"},{code:"ir",name:"Iran"},{code:"nz",name:"New Zealand"}],
-  "H": [{code:"es",name:"Spain"},{code:"cv",name:"Cape Verde"},{code:"sa",name:"Saudi Arabia"},{code:"uy",name:"Uruguay"}],
-  "I": [{code:"fr",name:"France"},{code:"sn",name:"Senegal"},{code:"iq",name:"Iraq"},{code:"no",name:"Norway"}],
-  "J": [{code:"ar",name:"Argentina"},{code:"dz",name:"Algeria"},{code:"at",name:"Austria"},{code:"jo",name:"Jordan"}],
-  "K": [{code:"pt",name:"Portugal"},{code:"cd",name:"DR Congo"},{code:"uz",name:"Uzbekistan"},{code:"co",name:"Colombia"}],
-  "L": [{code:"gb-eng",name:"England"},{code:"hr",name:"Croatia"},{code:"gh",name:"Ghana"},{code:"pa",name:"Panama"}],
-};
 
 function pad(n){ return String(n).padStart(2,'0'); }
 
@@ -824,117 +673,8 @@ function getDaysUntilWorldCup(){
   return Math.ceil(diff / (1000*60*60*24));
 }
 
-// ─── Demo Mode ────────────────────────────────────────────────
-// Simulates June 17 2026 at various match states with fake scores.
-// Portugal vs DR Congo is shown as the "live" match in all mid-game states.
-let DEMO_MODE = false;
-let DEMO_TIME = 'pre'; // pre | live1 | ht | live2 | ft
-
-// Demo: fake "now" timestamps relative to June 17 fixtures
-// Portugal vs DR Congo kicks off at 17:00 UTC
-const DEMO_KICKOFF = new Date('2026-06-17T17:00:00Z');
-
-const DEMO_TIMES = {
-  pre:   new Date('2026-06-17T16:30:00Z'), // 30min before KO
-  live1: new Date('2026-06-17T17:35:00Z'), // 35 min in
-  ht:    new Date('2026-06-17T17:50:00Z'), // half time
-  live2: new Date('2026-06-17T18:20:00Z'), // 65 min in
-  ft:    new Date('2026-06-17T19:05:00Z'), // full time
-};
-
-// Fake scores for demo fixtures keyed by "date_home"
-const DEMO_SCORES = {
-  pre: {},
-  live1: {
-    '2026-06-17_Portugal':    { home:1, away:0, minute:35, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  ht: {
-    '2026-06-17_Portugal':    { home:1, away:0, minute:45, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  live2: {
-    '2026-06-17_Portugal':    { home:2, away:1, minute:65, status:'live' },
-    '2026-06-17_England':     null,
-    '2026-06-17_Ghana':       null,
-    '2026-06-17_Uzbekistan':  null,
-  },
-  ft: {
-    '2026-06-17_Portugal':    { home:2, away:1, minute:null, status:'ft' },
-    '2026-06-17_England':     { home:3, away:0, minute:null, status:'ft' },
-    '2026-06-17_Ghana':       { home:1, away:1, minute:null, status:'ft' },
-    '2026-06-17_Uzbekistan':  null,
-  },
-};
-
-// Demo group standings (after 1 game each in Groups K and L — FT state)
-const DEMO_STANDINGS = {
-  K: [
-    { pos:1, name:'Portugal',   code:'pt', p:1, w:1, d:0, l:0, gf:2, ga:1, pts:3 },
-    { pos:2, name:'Colombia',   code:'co', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:3, name:'Uzbekistan', code:'uz', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 },
-    { pos:4, name:'DR Congo',   code:'cd', p:1, w:0, d:0, l:1, gf:1, ga:2, pts:0 },
-  ],
-  L: [
-    { pos:1, name:'England',    code:'gb-eng', p:1, w:1, d:0, l:0, gf:3, ga:0, pts:3 },
-    { pos:2, name:'Ghana',      code:'gh', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:3, name:'Panama',     code:'pa', p:1, w:0, d:1, l:0, gf:1, ga:1, pts:1 },
-    { pos:4, name:'Croatia',    code:'hr', p:1, w:0, d:0, l:1, gf:0, ga:3, pts:0 },
-  ],
-};
-
 function getNow(){
-  if(DEMO_MODE) return new Date(DEMO_TIMES[DEMO_TIME]);
   return new Date();
-}
-
-function getDemoScore(fixture){
-  if(!DEMO_MODE) return null;
-  const key = `${fixture.date}_${fixture.home}`;
-  const scores = DEMO_SCORES[DEMO_TIME] || {};
-  return scores[key] !== undefined ? scores[key] : null;
-}
-
-function toggleDemo(){
-  if(DEMO_MODE){ exitDemo(); return; }
-  DEMO_MODE = true;
-  DEMO_TIME = 'pre';
-  document.getElementById('demoBar').style.display = 'flex';
-  document.getElementById('demoToggleBtn').style.display = 'none';
-  document.body.classList.add('demo-active');
-  updateDemoButtons();
-  refreshAll();
-}
-
-function exitDemo(){
-  DEMO_MODE = false;
-  document.getElementById('demoBar').style.display = 'none';
-  document.getElementById('demoToggleBtn').style.display = 'block';
-  document.body.classList.remove('demo-active');
-  refreshAll();
-}
-
-function setDemoTime(t){
-  DEMO_TIME = t;
-  updateDemoButtons();
-  refreshAll();
-}
-
-function updateDemoButtons(){
-  ['pre','live1','ht','live2','ft'].forEach(t => {
-    const el = document.getElementById('dt-'+t);
-    if(el) el.classList.toggle('active', t === DEMO_TIME);
-  });
-}
-
-function refreshAll(){
-  // Clear standings cache so demo standings show fresh
-  Object.keys(standingsCache).forEach(k => delete standingsCache[k]);
-  render();
 }
 
 // ─── API config ───────────────────────────────────────────────
@@ -950,7 +690,6 @@ const FETCH_HOUR    = 7; // fetch data at 7am each day
 
 // ─── State ────────────────────────────────────────────────────
 let cachedFixtures   = [];   // fixtures for today from API
-let cachedStandings  = {};   // groupLetter -> rows
 let lastFetchDate    = null; // 'YYYY-MM-DD' of last successful fetch
 let WC_STAGE_ID      = null;
 let WC_SEASON_ID     = null;
@@ -1067,36 +806,6 @@ async function fetchTodayFixtures(){
   } catch(e){ console.warn('fetchTodayFixtures:', e.message); return []; }
 }
 
-// ─── Fetch group standings ─────────────────────────────────────
-async function fetchAllStandings(groups){
-  if(!WC_STAGE_ID || !WC_SEASON_ID) return {};
-  try {
-    const data = await apiFetch(
-      `/v1/tournaments/standings?locale=${LOCALE}&standing_type=home_away_total&tournament_stage_id=${WC_STAGE_ID}&tournament_season_id=${WC_SEASON_ID}`
-    );
-    const result = {};
-    (data?.DATA || []).forEach(table => {
-      const m = (table.NAME || table.LEAGUE_NAME || '').match(/Group\s+([A-L])/i);
-      if(!m) return;
-      const letter = m[1].toUpperCase();
-      if(!groups.includes(letter)) return; // only fetch groups we need
-      result[letter] = (table.ROWS || table.STANDINGS || []).map((row, i) => ({
-        pos:  row.RANK  || i + 1,
-        name: normName(row.TEAM_NAME || row.NAME || ''),
-        code: FLAG_CODES[normName(row.TEAM_NAME || row.NAME || '')] || 'un',
-        p:    row.PLAYED        ?? row.GP  ?? 0,
-        w:    row.WINS          ?? row.W   ?? 0,
-        d:    row.DRAWS         ?? row.D   ?? 0,
-        l:    row.LOSSES        ?? row.L   ?? 0,
-        gf:   row.GOALS_FOR     ?? row.GF  ?? 0,
-        ga:   row.GOALS_AGAINST ?? row.GA  ?? 0,
-        pts:  row.POINTS        ?? row.PTS ?? 0,
-      }));
-    });
-    return result;
-  } catch(e){ console.warn('fetchAllStandings:', e.message); return {}; }
-}
-
 // ─── Main daily fetch ─────────────────────────────────────────
 async function doFetch(){
   const today = getNow().toISOString().slice(0,10);
@@ -1106,28 +815,17 @@ async function doFetch(){
   if(!wcOk){
     // Tournament not listed yet — fall back to our hardcoded fixture schedule
     cachedFixtures  = [];
-    cachedStandings = {};
     lastFetchDate   = today;
     setStatus('no_tournament');
     return;
   }
 
-  // Fetch fixtures + standings in parallel — only 2-3 requests total
-  const [fixtures] = await Promise.all([ fetchTodayFixtures() ]);
+  const fixtures = await fetchTodayFixtures();
   cachedFixtures = fixtures;
-
-  // Get the groups playing today so we only fetch relevant standings
-  const groups = [...new Set([
-    ...fixtures.map(f => f.group),
-    ...getTodayFromSchedule().map(f => f.group),
-  ].filter(g => g !== '?'))].sort();
-
-  if(groups.length > 0){
-    cachedStandings = await fetchAllStandings(groups);
-  }
 
   lastFetchDate = today;
   setStatus('ok');
+
 }
 
 // ─── Status display ───────────────────────────────────────────
@@ -1137,10 +835,6 @@ function setStatus(s){ currentStatus = s; updateStatusBar(); }
 function updateStatusBar(){
   const el = document.getElementById('proxyStatus');
   if(!el) return;
-  if(DEMO_MODE){
-    el.innerHTML = dot('#C9A84C') + 'Demo mode active';
-    return;
-  }
   const count = getReqCount();
   const pct   = Math.min(Math.round((count / FREE_TIER_LIMIT) * 100), 100);
   const barCol = pct >= 100 ? '#8B3030' : pct >= 80 ? '#C9A84C' : '#2C9652';
@@ -1179,7 +873,6 @@ function getNextFetchTime(){
 
 // ─── Score lookup ──────────────────────────────────────────────
 function getApiScore(fixture){
-  if(DEMO_MODE) return getDemoScore(fixture);
   const match = cachedFixtures.find(f => f.home === fixture.home && f.away === fixture.away);
   if(!match) return null;
   if(match.homeFT !== null && match.awayFT !== null){
@@ -1215,19 +908,6 @@ function getTodayFromSchedule(){
   });
 }
 
-// ─── Standings lookup ─────────────────────────────────────────
-function getStandings(groupLetter){
-  if(DEMO_MODE && DEMO_TIME === 'ft' && DEMO_STANDINGS[groupLetter]){
-    return DEMO_STANDINGS[groupLetter];
-  }
-  if(cachedStandings[groupLetter]) return cachedStandings[groupLetter];
-  // Fallback: zeroed-out table from our schedule
-  const teams = GROUP_TEAMS[groupLetter] || [];
-  return teams.map((t, i) => ({
-    pos: i+1, name: t.name, code: t.code,
-    p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0
-  }));
-}
 
 // ─── Render ────────────────────────────────────────────────────
 function render(){
@@ -1251,7 +931,6 @@ function render(){
         homeFT: null, awayFT: null,
       }));
 
-  const involvedGroups = [...new Set(todayFixtures.filter(f => !f.isKnockout).map(f => f.group).filter(g => g !== '?'))].sort();
   const mainEl = document.getElementById('mainContent');
 
   if(todayFixtures.length === 0){
@@ -1318,40 +997,6 @@ function render(){
       </div>`;
   });
   html += `</div>`;
-
-  if(involvedGroups.length > 0){
-    html += `<div class="section-header">Group Standings</div>`;
-    html += `<div class="groups-grid">`;
-    involvedGroups.forEach(g => {
-      const standings  = getStandings(g);
-      const playingNow = new Set(todayFixtures.filter(f=>f.group===g).flatMap(f=>[f.home,f.away]));
-      let tableHtml = `
-        <div class="group-card">
-          <div class="group-card-title">Group ${g}</div>
-          <table class="standings-table">
-            <thead><tr>
-              <th class="col-team" colspan="2"></th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th>
-            </tr></thead><tbody>`;
-      standings.forEach((t, i) => {
-        const isPlaying = playingNow.has(t.name);
-        tableHtml += `
-          <tr class="${isPlaying ? 'playing-row' : ''}">
-            <td class="col-team" style="display:table-cell;padding-right:6px;width:18px;"><span class="pos-num">${i+1}</span></td>
-            <td class="col-team">
-              <span class="team-flag-sm">${flagImg(t.code || FLAG_CODES[t.name] || 'un', 'sm')}</span>
-              <span>${t.name}</span>
-              ${isPlaying ? '<span class="playing-indicator"></span>' : ''}
-            </td>
-            <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
-            <td class="pts-col">${t.pts}</td>
-          </tr>`;
-      });
-      tableHtml += `</tbody></table></div>`;
-      html += tableHtml;
-    });
-    html += `</div>`;
-  }
 
   mainEl.innerHTML = html;
   buildTicker(todayFixtures);
