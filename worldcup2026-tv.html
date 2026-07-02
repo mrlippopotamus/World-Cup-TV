@@ -988,20 +988,25 @@ function localDateStr(date){
 }
 
 function getTodayFromSchedule(){
-  const now   = getNow();
-  const in24h = new Date(now.getTime() + 24*60*60*1000);
 
-  // Local midnight = start of today in the browser's timezone
-  // new Date(y, m, d) uses LOCAL time, so this is correct in BST
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const now = getNow();
+
+  // 06:00 UK start of TV day
+  const windowStart = new Date(now);
+  windowStart.setHours(6, 0, 0, 0);
+
+  // Before 6am, keep showing yesterday's TV day
+  if (now < windowStart) {
+    windowStart.setDate(windowStart.getDate() - 1);
+  }
+
+  // 24-hour window
+  const windowEnd = new Date(windowStart);
+  windowEnd.setDate(windowEnd.getDate() + 1);
 
   return ALL_FIXTURES.filter(f => {
     const ko = getKickoffUTC(f);
-    // Must kick off after local midnight today (not a previous day's game)
-    if(ko < todayMidnight) return false;
-    // Must kick off within the next 24 hours
-    if(ko > in24h) return false;
-    return true;
+    return ko >= windowStart && ko < windowEnd;
   });
 }
 
