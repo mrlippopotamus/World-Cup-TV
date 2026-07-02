@@ -784,7 +784,9 @@ const allNames = allGroups.map(g => g.NAME || g.LEAGUE_NAME || '');
 results.sort((a, b) => a.kickoff - b.kickoff);
 
 // 06:00–05:59 UK TV day
-const now = getNow();
+const now = new Date(new Date().toLocaleString("en-GB", {
+    timeZone: "Europe/London"
+}));
 
 const windowStart = new Date(now);
 windowStart.setHours(6, 0, 0, 0);
