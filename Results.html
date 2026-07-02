@@ -608,13 +608,6 @@ async function resolveWCIds(){
 }
 
 // Knockout round label from FlashLive ROUND field
-
-console.log({
-  round: ev.ROUND,
-  stage: ev.STAGE_TYPE,
-  home: ev.HOME_NAME,
-  away: ev.AWAY_NAME
-});
  
 function knockoutRoundLabel(roundStr){
   const r = (roundStr || '').toLowerCase();
@@ -665,6 +658,13 @@ async function fetchResults(){
                      || ALL_FIXTURES.find(f => f.home === away && f.away === home);
         const roundLabel  = knockoutRoundLabel(ev.ROUND || '');
         const isKnockout   = !fixture || /round of|quarter|semi|final|3rd|third|knockout/i.test(ev.ROUND || '');
+        console.log({
+  round: ev.ROUND,
+  stage: ev.STAGE_TYPE,
+  home: ev.HOME_NAME,
+  away: ev.AWAY_NAME
+});
+       
         results.push({
           home,
           away,
