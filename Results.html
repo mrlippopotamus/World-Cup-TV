@@ -686,7 +686,7 @@ async function fetchResults(){
           awayScore:  parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
           group:      isKnockout ? roundLabel : (fixture?.group || '?'),
           isKnockout,
-          venue:      fixture?.venue || '',
+          venue:      fixture?.venue || ev.VENUE_NAME || '',
           kickoff:    new Date((ev.START_TIME || 0) * 1000),
         });
       });
