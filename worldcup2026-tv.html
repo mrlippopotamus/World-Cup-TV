@@ -754,15 +754,34 @@ async function resolveWCIds(){
 // ─── Fetch today's fixtures from FlashLive ────────────────────
 // Knockout round names FlashLive may use in the ROUND field, mapped to a
 // short display label since these matches have no "Group" letter.
-function knockoutRoundLabel(roundStr){
-  const r = (roundStr || '').toLowerCase();
-  if(r.includes('final') && !r.includes('semi') && !r.includes('quarter')) return 'Final';
-  if(r.includes('3rd') || r.includes('third place')) return '3rd Place';
-  if(r.includes('semi'))   return 'Semi-Final';
-  if(r.includes('quarter')) return 'Quarter-Final';
-  if(r.includes('16'))     return 'Round of 16';
-  if(r.includes('32'))     return 'Round of 32';
-  return 'Knockout';
+function knockoutRoundLabel(roundStr) {
+    const r = (roundStr || '').toLowerCase().trim();
+
+    // Round of 32
+    if (r.includes('1/16') || r.includes('round of 32') || r.includes('last 32'))
+        return 'Round of 32';
+
+    // Round of 16
+    if (r.includes('1/8') || r.includes('round of 16') || r.includes('last 16'))
+        return 'Round of 16';
+
+    // Quarter-finals
+    if (r.includes('quarter'))
+        return 'Quarter-Final';
+
+    // Semi-finals
+    if (r.includes('semi'))
+        return 'Semi-Final';
+
+    // Third place
+    if (r.includes('3rd') || r.includes('third'))
+        return '3rd Place';
+
+    // Final (must be LAST)
+    if (r === 'final' || r === 'finals')
+        return 'Final';
+
+    return roundStr;
 }
 
 async function fetchTodayFixtures(){
