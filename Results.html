@@ -722,23 +722,14 @@ function knockoutRoundLabel(roundStr) {
 // ─── Fetch yesterday's results ─────────────────────────────────
 async function fetchResults(){
   try {
-    const [yesterdayData, todayData] = await Promise.all([
-  apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=-1`),
-  apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=0`)
-]);
-
-const results = [];
+    const data = await apiFetch(`/v1/events/list?locale=${LOCALE}&sport_id=${SPORT_ID}&timezone=0&indent_days=-1`);
+    const results = [];
 
     // Log all group/tournament names so we can see what FlashLive calls the World Cup
-    const allGroups = [
-  ...(yesterdayData?.DATA || []),
-  ...(todayData?.DATA || [])
-];
-
-const allNames = allGroups.map(g => g.NAME || g.LEAGUE_NAME || '');
+    const allNames = (data?.DATA || []).map(g => g.NAME || g.LEAGUE_NAME || '');
     console.log('[FlashLive] Tournament names in yesterday response:', allNames);
 
-    allGroups.forEach(group => {
+    (data?.DATA || []).forEach(group => {
       const name    = (group.NAME || group.LEAGUE_NAME || '').toLowerCase();
       const country = (group.COUNTRY_NAME || '').toLowerCase();
       // FlashLive files the 2026 World Cup under "World: World Championship"
@@ -781,28 +772,9 @@ const allNames = allGroups.map(g => g.NAME || g.LEAGUE_NAME || '');
       });
     });
 
-results.sort((a, b) => a.kickoff - b.kickoff);
-
-// 06:00–05:59 UK TV day
-const now = new Date();
-
-const windowStart = new Date(now);
-windowStart.setHours(6, 0, 0, 0);
-
-if (now < windowStart) {
-  windowStart.setDate(windowStart.getDate() - 1);
-}
-
-const windowEnd = new Date(windowStart);
-windowEnd.setDate(windowEnd.getDate() + 1);
-
-const filtered = results.filter(r =>
-  r.kickoff >= windowStart &&
-  r.kickoff < windowEnd
-);
-
-console.log('[FlashLive] Results found:', filtered.length);
-return filtered;
+    results.sort((a, b) => a.kickoff - b.kickoff);
+    console.log('[FlashLive] Results found:', results.length);
+    return results;
   } catch(e){ console.warn('fetchResults error:', e.message); return []; }
 }
 
