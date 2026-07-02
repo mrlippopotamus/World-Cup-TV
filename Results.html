@@ -438,32 +438,111 @@ function flagImg(code, size, cls){
 }
 
 const TEAM_NAME_MAP = {
-  // South Korea
-  'Korea Republic':'South Korea', 'Republic of Korea':'South Korea',
-  // Czechia
-  'Czech Republic':'Czechia',
-  // Bosnia
-  'Bosnia':'Bosnia & Herz.', 'Bosnia and Herzegovina':'Bosnia & Herz.',
-  'Bosnia-Herzegovina':'Bosnia & Herz.', 'Bosnia & Herzegovina':'Bosnia & Herz.',
-  // Ivory Coast
-  "Côte d'Ivoire":"Ivory Coast", "Cote d'Ivoire":"Ivory Coast", 'Cote dIvoire':'Ivory Coast',
-  // DR Congo
-  'Congo DR':'DR Congo', 'Democratic Republic of Congo':'DR Congo',
-  'Republic of Congo':'DR Congo', 'DR of Congo':'DR Congo',
-  // Turkey
-  'Turkey':'Türkiye',
-  // Curaçao
-  'Curacao':'Curaçao',
-  // Morocco
-  'Maroc':'Morocco', 'Marocco':'Morocco',
-  // USA
-  'United States':'USA', 'United States of America':'USA',
-  // Iran
-  'IR Iran':'Iran',
-  // Scotland/England
-  'Scotland':'Scotland', 'England':'England',
+  // Americas
+  "United States":"USA",
+  "United States of America":"USA",
+  "USA":"USA",
+  "Mexico":"Mexico",
+  "Canada":"Canada",
+  "Costa Rica":"Costa Rica",
+  "Panama":"Panama",
+  "Haiti":"Haiti",
+
+  // Europe
+  "England":"England",
+  "Scotland":"Scotland",
+  "Wales":"Wales",
+  "Northern Ireland":"Northern Ireland",
+  "Republic of Ireland":"Ireland",
+  "Ireland":"Ireland",
+  "France":"France",
+  "Germany":"Germany",
+  "Spain":"Spain",
+  "Portugal":"Portugal",
+  "Italy":"Italy",
+  "Belgium":"Belgium",
+  "Netherlands":"Netherlands",
+  "Croatia":"Croatia",
+  "Austria":"Austria",
+  "Switzerland":"Switzerland",
+  "Sweden":"Sweden",
+  "Norway":"Norway",
+  "Denmark":"Denmark",
+  "Poland":"Poland",
+  "Serbia":"Serbia",
+  "Ukraine":"Ukraine",
+  "Romania":"Romania",
+  "Slovakia":"Slovakia",
+  "Slovenia":"Slovenia",
+  "Czech Republic":"Czechia",
+  "Czechia":"Czechia",
+  "Türkiye":"Türkiye",
+  "Turkey":"Türkiye",
+  "Bosnia":"Bosnia & Herz.",
+  "Bosnia and Herzegovina":"Bosnia & Herz.",
+  "Bosnia & Herzegovina":"Bosnia & Herz.",
+  "Bosnia-Herzegovina":"Bosnia & Herz.",
+  "Bosnia & Herz.":"Bosnia & Herz.",
+
+  // Africa
+  "Morocco":"Morocco",
+  "Maroc":"Morocco",
+  "Egypt":"Egypt",
+  "Algeria":"Algeria",
+  "Tunisia":"Tunisia",
+  "Senegal":"Senegal",
+  "Ghana":"Ghana",
+  "South Africa":"South Africa",
+  "Cape Verde":"Cape Verde",
+  "Cabo Verde":"Cape Verde",
+  "Ivory Coast":"Ivory Coast",
+  "Côte d'Ivoire":"Ivory Coast",
+  "Cote d'Ivoire":"Ivory Coast",
+  "Cote dIvoire":"Ivory Coast",
+  "DR Congo":"DR Congo",
+  "Congo DR":"DR Congo",
+  "Democratic Republic of Congo":"DR Congo",
+  "DR of Congo":"DR Congo",
+
+  // Asia
+  "Japan":"Japan",
+  "South Korea":"South Korea",
+  "Korea Republic":"South Korea",
+  "Republic of Korea":"South Korea",
+  "Saudi Arabia":"Saudi Arabia",
+  "Qatar":"Qatar",
+  "Iran":"Iran",
+  "IR Iran":"Iran",
+  "Iraq":"Iraq",
+  "Jordan":"Jordan",
+  "Uzbekistan":"Uzbekistan",
+
+  // Oceania
+  "Australia":"Australia",
+  "New Zealand":"New Zealand",
+
+  // South America
+  "Argentina":"Argentina",
+  "Brazil":"Brazil",
+  "Uruguay":"Uruguay",
+  "Paraguay":"Paraguay",
+  "Colombia":"Colombia",
+  "Ecuador":"Ecuador",
+
+  // Caribbean
+  "Curaçao":"Curaçao",
+  "Curacao":"Curaçao"
 };
-function normName(n){ return TEAM_NAME_MAP[n] || n; }
+function normName(name){
+    const original = (name || '').trim();
+    const clean = original.replace(/\s*\*+\s*$/, '');
+
+    return (TEAM_NAME_MAP[clean] || clean) + (original.endsWith('*') ? ' *' : '');
+}
+
+ function teamKey(name){
+    return (name || '').replace(/\s*\*+\s*$/, '').trim();
+}
 
 // ─── Fixture schedule (for group/venue lookup) ────────────────
 const ALL_FIXTURES = [
@@ -680,8 +759,8 @@ async function fetchResults(){
         results.push({
           home,
           away,
-          homeCode:   FLAG_CODES[home] || 'un',
-          awayCode:   FLAG_CODES[away] || 'un',
+          homeCode: FLAG_CODES[teamKey(home)] || 'un',
+          awayCode: FLAG_CODES[teamKey(away)] || 'un',
           homeScore:  parseInt(ev.HOME_SCORE_CURRENT) ?? null,
           awayScore:  parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
           group:      isKnockout ? roundLabel : (fixture?.group || '?'),
