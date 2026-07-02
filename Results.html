@@ -305,64 +305,6 @@
   .venue-text { font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px; }
 
   /* ── SECTION HEADER ── */
-  .section-header {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--gold);
-    margin: 52px 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .section-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--card-border);
-  }
-
-  /* ── GROUP STANDINGS ── */
-  .groups-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  .group-card {
-    background: rgba(20, 70, 42, 0.6);
-    border: 1px solid rgba(201,168,76,0.2);
-    border-radius: 12px;
-    padding: 20px 22px;
-  }
-
-  .group-card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    margin-bottom: 12px;
-  }
-
-  .standings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .standings-table thead tr { border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .standings-table th {
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--text-muted); font-weight: 600; padding: 0 0 7px; text-align: right;
-  }
-  .standings-table th.col-team { text-align: left; }
-  .standings-table td { padding: 6px 0; text-align: right; color: var(--offwhite); border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .standings-table td.col-team { text-align: left; display: flex; align-items: center; gap: 7px; }
-  .standings-table tr:last-child td { border-bottom: none; }
-  .standings-table td.pts-col { color: var(--gold); font-weight: 700; font-size: 14px; }
-
-  .team-flag-sm {
-    width: 22px; height: 16px; flex-shrink: 0;
-    border-radius: 2px; overflow: hidden; display: inline-flex; align-items: center;
-  }
-  .team-flag-sm img { width: 100%; height: 100%; object-fit: cover; }
-  .pos-num { font-size: 11px; color: var(--text-muted); width: 14px; flex-shrink: 0; }
 
   /* ── TICKER ── */
   .ticker-bar {
@@ -455,7 +397,7 @@
 </div>
 
 <footer>
-  World Cup 2026 · Results updated daily at 7:00 · Powered by IT Guru Jordan
+  World Cup 2026 · Results updated daily at 7:00 · Powered by FlashLive Sports via RapidAPI
 </footer>
 
 <script>
@@ -477,24 +419,49 @@ const FLAG_CODES = {
 
 function flagImg(code, size, cls){
   size = size || 'lg'; cls = cls || '';
-  const c = (code || 'un').toLowerCase();
   const dims = {sm:'20x15', md:'32x24', lg:'56x42', xl:'80x60'};
   const d = dims[size] || dims.lg;
   const parts = d.split('x');
   const dw = parseInt(parts[0])*2, dh = parseInt(parts[1])*2;
+  if(!code || code === 'un'){
+    return '<span style="display:inline-block;width:'+parts[0]+'px;height:'+parts[1]+'px;'
+         + 'background:rgba(255,255,255,0.08);border-radius:4px;"></span>';
+  }
+  const c = code.toLowerCase();
   return '<img src="https://flagcdn.com/'+d+'/'+c+'.png"'
        + ' srcset="https://flagcdn.com/'+dw+'x'+dh+'/'+c+'.png 2x"'
        + ' width="'+parts[0]+'" height="'+parts[1]+'"'
        + ' alt="" loading="lazy"'
        + ' style="border-radius:4px;object-fit:cover;display:block;"'
+       + ' onerror="this.style.display=\'none\'"'
        + ' class="'+cls+'">';
 }
 
 const TEAM_NAME_MAP = {
-  'Korea Republic':'South Korea', 'Czech Republic':'Czechia',
+  // South Korea
+  'Korea Republic':'South Korea', 'Republic of Korea':'South Korea',
+  // Czechia
+  'Czech Republic':'Czechia',
+  // Bosnia
   'Bosnia':'Bosnia & Herz.', 'Bosnia and Herzegovina':'Bosnia & Herz.',
-  "Côte d'Ivoire":"Ivory Coast", 'Congo DR':'DR Congo',
-  'Turkey':'Türkiye', 'Curacao':'Curaçao',
+  'Bosnia-Herzegovina':'Bosnia & Herz.', 'Bosnia & Herzegovina':'Bosnia & Herz.',
+  // Ivory Coast
+  "Côte d'Ivoire":"Ivory Coast", "Cote d'Ivoire":"Ivory Coast", 'Cote dIvoire':'Ivory Coast',
+  // DR Congo
+  'Congo DR':'DR Congo', 'Democratic Republic of Congo':'DR Congo',
+  'Republic of Congo':'DR Congo', 'DR of Congo':'DR Congo',
+  // Turkey
+  'Turkey':'Türkiye',
+  // Curaçao
+  'Curacao':'Curaçao',
+  // Morocco
+  'Maroc':'Morocco', 'Marocco':'Morocco',
+  // USA
+  'United States':'USA', 'United States of America':'USA',
+  // Iran
+  'IR Iran':'Iran',
+  // Scotland/England
+  'Scotland':'Scotland', 'England':'England',
 };
 function normName(n){ return TEAM_NAME_MAP[n] || n; }
 
@@ -583,7 +550,6 @@ const FETCH_HOUR    = 7;
 
 // ─── State ────────────────────────────────────────────────────
 let cachedResults   = [];  // finished fixtures from last 24hrs
-let cachedStandings = {};  // groupLetter -> rows
 let lastFetchDate   = null;
 let WC_STAGE_ID     = null;
 let WC_SEASON_ID    = null;
@@ -641,6 +607,19 @@ async function resolveWCIds(){
   } catch(e){ console.warn('resolveWCIds:', e.message); return false; }
 }
 
+// Knockout round label from FlashLive ROUND field
+function knockoutRoundLabel(roundStr){
+  const r = (roundStr || '').toLowerCase();
+  if(r.includes('final') && !r.includes('semi') && !r.includes('quarter') && !r.includes('3rd')) return 'Final';
+  if(r.includes('3rd') || r.includes('third place')) return '3rd Place';
+  if(r.includes('semi'))    return 'Semi-Final';
+  if(r.includes('quarter')) return 'Quarter-Final';
+  if(r.includes('16'))      return 'Round of 16';
+  if(r.includes('32'))      return 'Round of 32';
+  if(r.includes('playoff')) return 'Playoff';
+  return 'Knockout';
+}
+
 // ─── Fetch yesterday's results ─────────────────────────────────
 async function fetchResults(){
   try {
@@ -676,16 +655,19 @@ async function fetchResults(){
         const away = normName(ev.AWAY_NAME || '');
         const fixture = ALL_FIXTURES.find(f => f.home === home && f.away === away)
                      || ALL_FIXTURES.find(f => f.home === away && f.away === home);
+        const roundLabel  = knockoutRoundLabel(ev.ROUND || '');
+        const isKnockout   = !fixture || /round of|quarter|semi|final|3rd|third|knockout/i.test(ev.ROUND || '');
         results.push({
           home,
           away,
-          homeCode:  FLAG_CODES[home] || 'un',
-          awayCode:  FLAG_CODES[away] || 'un',
-          homeScore: parseInt(ev.HOME_SCORE_CURRENT) ?? null,
-          awayScore: parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
-          group:     fixture?.group || '?',
-          venue:     fixture?.venue || '',
-          kickoff:   new Date((ev.START_TIME || 0) * 1000),
+          homeCode:   FLAG_CODES[home] || 'un',
+          awayCode:   FLAG_CODES[away] || 'un',
+          homeScore:  parseInt(ev.HOME_SCORE_CURRENT) ?? null,
+          awayScore:  parseInt(ev.AWAY_SCORE_CURRENT) ?? null,
+          group:      isKnockout ? roundLabel : (fixture?.group || '?'),
+          isKnockout,
+          venue:      fixture?.venue || '',
+          kickoff:    new Date((ev.START_TIME || 0) * 1000),
         });
       });
     });
@@ -696,35 +678,6 @@ async function fetchResults(){
   } catch(e){ console.warn('fetchResults error:', e.message); return []; }
 }
 
-// ─── Fetch standings ───────────────────────────────────────────
-async function fetchAllStandings(groups){
-  if(!WC_STAGE_ID || !WC_SEASON_ID) return {};
-  try {
-    const data = await apiFetch(
-      `/v1/tournaments/standings?locale=${LOCALE}&standing_type=home_away_total&tournament_stage_id=${WC_STAGE_ID}&tournament_season_id=${WC_SEASON_ID}`
-    );
-    const result = {};
-    (data?.DATA || []).forEach(table => {
-      const m = (table.NAME || table.LEAGUE_NAME || '').match(/Group\s+([A-L])/i);
-      if(!m) return;
-      const letter = m[1].toUpperCase();
-      if(!groups.includes(letter)) return;
-      result[letter] = (table.ROWS || table.STANDINGS || []).map((row, i) => ({
-        pos:  row.RANK  || i + 1,
-        name: normName(row.TEAM_NAME || row.NAME || ''),
-        code: FLAG_CODES[normName(row.TEAM_NAME || row.NAME || '')] || 'un',
-        p:    row.PLAYED        ?? row.GP  ?? 0,
-        w:    row.WINS          ?? row.W   ?? 0,
-        d:    row.DRAWS         ?? row.D   ?? 0,
-        l:    row.LOSSES        ?? row.L   ?? 0,
-        gf:   row.GOALS_FOR     ?? row.GF  ?? 0,
-        ga:   row.GOALS_AGAINST ?? row.GA  ?? 0,
-        pts:  row.POINTS        ?? row.PTS ?? 0,
-      }));
-    });
-    return result;
-  } catch(e){ console.warn('fetchAllStandings:', e.message); return {}; }
-}
 
 // ─── Main daily fetch ──────────────────────────────────────────
 async function doFetch(){
@@ -735,10 +688,6 @@ async function doFetch(){
 
   cachedResults = await fetchResults();
 
-  const groups = [...new Set(cachedResults.map(r => r.group).filter(g => g !== '?'))].sort();
-  if(groups.length > 0){
-    cachedStandings = await fetchAllStandings(groups);
-  }
 
   lastFetchDate = today;
   setStatus('ok');
@@ -825,7 +774,6 @@ function render(){
     return;
   }
 
-  const involvedGroups = [...new Set(cachedResults.map(r => r.group).filter(g => g !== '?'))].sort();
 
   let html = `<div class="results-count"><span>${cachedResults.length}</span> result${cachedResults.length !== 1 ? 's' : ''} from the last 24 hours</div>`;
   html += `<div class="results-grid">`;
@@ -840,7 +788,7 @@ function render(){
     html += `
       <div class="result-card">
         <div class="card-top">
-          <span class="group-badge">Group ${r.group}</span>
+          <span class="group-badge">${r.isKnockout ? r.group : "Group " + r.group}</span>
           <span class="kickoff-time">🕐 ${timeStr}</span>
         </div>
         <div class="teams-row">
@@ -872,40 +820,6 @@ function render(){
 
   html += `</div>`;
 
-  // Group standings for involved groups
-  if(involvedGroups.length > 0 && Object.keys(cachedStandings).length > 0){
-    html += `<div class="section-header">Updated Group Standings</div>`;
-    html += `<div class="groups-grid">`;
-    involvedGroups.forEach(g => {
-      const rows = cachedStandings[g];
-      if(!rows) return;
-      const playedToday = new Set(cachedResults.filter(r => r.group === g).flatMap(r => [r.home, r.away]));
-      let tableHtml = `
-        <div class="group-card">
-          <div class="group-card-title">Group ${g}</div>
-          <table class="standings-table">
-            <thead><tr>
-              <th class="col-team" colspan="2"></th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th>
-            </tr></thead><tbody>`;
-      rows.forEach((t, i) => {
-        const played = playedToday.has(t.name);
-        tableHtml += `
-          <tr style="${played ? 'color:var(--white);font-weight:700;' : ''}">
-            <td class="col-team" style="display:table-cell;padding-right:6px;width:18px;"><span class="pos-num">${i+1}</span></td>
-            <td class="col-team">
-              <span class="team-flag-sm">${flagImg(t.code || 'un', 'sm')}</span>
-              <span>${t.name}</span>
-            </td>
-            <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
-            <td class="pts-col">${t.pts}</td>
-          </tr>`;
-      });
-      tableHtml += `</tbody></table></div>`;
-      html += tableHtml;
-    });
-    html += `</div>`;
-  }
 
   mainEl.innerHTML = html;
   buildTicker(cachedResults);
@@ -917,7 +831,7 @@ function buildTicker(results){
         const score = (r.homeScore !== null && r.awayScore !== null)
           ? `<strong>${r.homeScore}–${r.awayScore}</strong>`
           : 'vs';
-        return `<span class="ticker-item"><strong>Group ${r.group}:</strong> ${r.home} ${score} ${r.away} · FT · ${r.venue}</span>`;
+        return `<span class="ticker-item"><strong>${r.isKnockout ? r.group : "Group " + r.group}:</strong> ${r.home} ${score} ${r.away} · FT · ${r.venue}</span>`;
       })
     : [`<span class="ticker-item">World Cup 2026 · USA · Canada · Mexico · June 11 – July 19, 2026 · 48 Teams · 104 Matches</span>`];
   document.getElementById('tickerContent').innerHTML = [...items, ...items].join('');
