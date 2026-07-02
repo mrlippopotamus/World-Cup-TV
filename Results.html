@@ -608,6 +608,14 @@ async function resolveWCIds(){
 }
 
 // Knockout round label from FlashLive ROUND field
+
+console.log({
+  round: ev.ROUND,
+  stage: ev.STAGE_TYPE,
+  home: ev.HOME_NAME,
+  away: ev.AWAY_NAME
+});
+ 
 function knockoutRoundLabel(roundStr){
   const r = (roundStr || '').toLowerCase();
   if(r.includes('final') && !r.includes('semi') && !r.includes('quarter') && !r.includes('3rd')) return 'Final';
